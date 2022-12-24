@@ -2,9 +2,11 @@ CONFIG += console
 
 CONFIG += debug
 
-HEADERS       = sources/povviewer.h
+HEADERS       =	sources/myconfig.h \
+				sources/povviewer.h
 
-SOURCES       = sources/main.cpp
+SOURCES       =	sources/myconfig.cpp \
+				sources/main.cpp
 
 QT           += widgets
 

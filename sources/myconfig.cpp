@@ -5,6 +5,14 @@
 **
 ****************************************************************************/
 
-#include "config.h"
+#include "myconfig.h"
 
-static cfg;
+//~ static cfg;
+Config::~Config()
+{
+}
+
+Config::Config() : m_iWinPosX(0), m_iWinPosY(0)
+	, m_uiWinWidth(320), m_uiWinHeight(240)
+{
+}
