@@ -21,9 +21,25 @@ static Config cfg;
 
 bool parse_scene_for_config(const QString &scenepath, Config &_cfg)
 {
-	qDebug() << scenepath;
 	qDebug() << _cfg;
-	return false;
+	qDebug() << "Reading file" << scenepath;
+
+	QFile f{scenepath};
+
+	if (!f.open(QIODevice::ReadOnly)) {
+		qWarning() << "Cannot open file" << scenepath << "for reading";
+		return false;
+	}
+
+	QTextStream in{&f};
+
+	while (!in.atEnd()) {
+		QString line = in.readLine().simplified();
+		if (line.startsWith("// povviewer:")) {
+			qDebug() << line;
+		}
+	}
+	return true;
 }
 
 int main(int argc, char *argv[])
@@ -50,6 +66,8 @@ int main(int argc, char *argv[])
 	parser.process(app);
 
 	qDebug() << "Working dir" << QDir::currentPath();
+	qDebug() << "Home dir" << QDir::homePath();
+	qDebug() << "Temporary dir" << QDir::tempPath();
 
 	QString filename;
 
@@ -88,7 +106,7 @@ int main(int argc, char *argv[])
 	//~ }
 	//~ mainWindow.resize(mainWindow.sizeHint());
 	//~ int desktopArea = QApplication::desktop()->width() *
-					  //~ QApplication::desktop()->height();
+	//~ QApplication::desktop()->height();
 	//~ int widgetArea = mainWindow.width() * mainWindow.height();
 	//~ if (((float)widgetArea / (float)desktopArea) < 0.75f)
 	//~ mainWindow.show();
