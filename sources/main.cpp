@@ -10,7 +10,7 @@
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 #include <QDir>
-#include <QFile>
+#include <QDateTime>
 
 #include "povviewer.h"
 #include "myconfig.h"
@@ -19,31 +19,91 @@
 
 static Config cfg;
 
-bool parse_scene_for_config(const QString &scenepath, Config &_cfg)
+/*
+void verboseMessageHandler(QtMsgType type, const QMessageLogContext &context,
+						   const QString &msg)
 {
-	qDebug() << _cfg;
-	qDebug() << "Reading file" << scenepath;
+	static const char* typeStr[] = {"   DEBUG", " WARNING",
+									"CRITICAL", "   FATAL"
+								   };
 
-	QFile f{scenepath};
+	if(type <= QtFatalMsg) {
 
-	if (!f.open(QIODevice::ReadOnly)) {
-		qWarning() << "Cannot open file" << scenepath << "for reading";
-		return false;
-	}
+#ifdef MS_WINDOWS
+		// Установка кодека для нормальной работы консоли
+		QTextCodec::setCodecForLocale(QTextCodec::codecForName("CP 866"));
+#endif
 
-	QTextStream in{&f};
+		QByteArray localMsg = msg.toLocal8Bit();
 
-	while (!in.atEnd()) {
-		QString line = in.readLine().simplified();
-		if (line.startsWith("// povviewer:")) {
-			qDebug() << line;
+		//~ QString contextString(QStringLiteral("%1:%2: %3")
+		//~ .arg(context.file)
+		//~ .arg(context.line)
+		//~ .arg(context.function));
+		QString contextString(QStringLiteral("%1:%2: ")
+							  .arg(context.file)
+							  .arg(context.line));
+
+		QString timeStr(QDateTime::currentDateTime()
+						.toString("dd-MM-yy HH:mm:ss:zzz"));
+
+		//~ std::cerr << timeStr.toLocal8Bit().constData() << " - "
+		//~ if (type>0 || cfg_debug) {
+		if (type > 0) {
+			std::cout << contextString.toLocal8Bit().constData()
+					  << typeStr[type] << " "
+					  //~ << timeStr.toLocal8Bit().constData() << " "
+					  << localMsg.constData() << std::endl;
+			//~ std::cout.flush();
+		}
+#ifdef MS_WINDOWS
+		// Установка кодека для нормальной работы локали
+		QTextCodec::setCodecForLocale(QTextCodec::codecForName("CP 1251"));
+#endif
+		if(type == QtFatalMsg) {
+			abort();
 		}
 	}
-	return true;
+}
+*/
+
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context
+					 , const QString &msg)
+{
+	QByteArray localMsg = msg.toLocal8Bit();
+	const char *file = context.file ? context.file : "";
+	const char *function = context.function ? context.function : "";
+	const char* msg_type;
+	switch (type) {
+	case QtDebugMsg:
+		msg_type = "   DEBUG";
+		break;
+	case QtInfoMsg:
+		msg_type = "    INFO";
+		break;
+	case QtWarningMsg:
+		msg_type = " WARNING";
+		break;
+	case QtCriticalMsg:
+		msg_type = "CRITICAL";
+		break;
+	case QtFatalMsg:
+		msg_type = "   FATAL";
+		break;
+	}
+	fprintf(stderr, "%s:%u: %s\nDEBUG: %s\n", file, context.line, function
+			, localMsg.constData());
 }
 
 int main(int argc, char *argv[])
 {
+#ifdef NDEBUG
+	qDebug("DEBUG is OFF");
+#else
+	qDebug("DEBUG is ON");
+	qInstallMessageHandler(myMessageOutput);
+#endif
+
 	QApplication app(argc, argv);
 
 	QCoreApplication::setApplicationName("POV-Ray Viewer");
@@ -84,7 +144,7 @@ int main(int argc, char *argv[])
 	QFileInfo fi_scene{filename};
 	qDebug() << "Scene file name" << fi_scene.absoluteFilePath();
 
-	parse_scene_for_config(fi_scene.absoluteFilePath(), cfg);
+	cfg.scan_scene_file(fi_scene.absoluteFilePath());
 
 	return 0;
 	QSurfaceFormat fmt;

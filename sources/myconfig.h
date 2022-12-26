@@ -11,86 +11,144 @@
 #include <QObject>
 #include <QMetaProperty>
 #include <QTextStream>
+#include <QFile>
 
 #include <QDebug>
 
 class Config : public QObject {
 	Q_OBJECT
-	Q_PROPERTY(int WinPosX READ WinPosX WRITE setWinPosX)
-	Q_PROPERTY(int WinPosY READ WinPosY WRITE setWinPosY)
-	Q_PROPERTY(unsigned int WinWidth READ WinWidth WRITE setWinWidth)
-	Q_PROPERTY(unsigned int WinHeight READ WinHeight WRITE setWinHeight)
+	Q_PROPERTY(bool change_window_pos MEMBER m_bChgWinPos)
+	Q_PROPERTY(int window_pos_x MEMBER m_iWinPosX)
+	Q_PROPERTY(int window_pos_y MEMBER m_iWinPosY)
+
+	Q_PROPERTY(bool change_window_size MEMBER m_bChgWinSize)
+	Q_PROPERTY(uint window_width MEMBER m_uiWinWidth)
+	Q_PROPERTY(uint window_height MEMBER m_uiWinHeight)
 
 private:
+	bool m_bChgWinPos;
 	int m_iWinPosX;
 	int m_iWinPosY;
-	unsigned int m_uiWinWidth;
-	unsigned int m_uiWinHeight;
+	bool m_bChgWinSize;
+	uint m_uiWinWidth;
+	uint m_uiWinHeight;
 
 public:
 	Config();
 	~Config();
 
-	void setWinPosX(int iX) {
-		m_iWinPosX = iX;
-	}
-
-	int WinPosX() const {
-		return m_iWinPosX;
-	}
-
-	void setWinPosY(int iY) {
-		m_iWinPosY = iY;
-	}
-
-	int WinPosY() const {
-		return m_iWinPosY;
-	}
-
-	void setWinWidth(unsigned int uiW) {
-		m_uiWinWidth = uiW;
-	}
-
-	unsigned int WinWidth() const {
-		return m_uiWinWidth;
-	}
-
-	void setWinHeight(unsigned int uiH) {
-		m_uiWinHeight = uiH;
-	}
-
-	unsigned int WinHeight() const {
-		return m_uiWinHeight;
-	}
-
-	//~ friend QTextStream &QTextStream::operator << (QTextStream &o, const Config &_cfg);
 	friend QDebug operator << (QDebug d, const Config &cfg) {
 		d << "Config" << endl;
 		const QMetaObject* pmo = cfg.metaObject();
 		for (int i=0; i < pmo->propertyCount(); ++i) {
 			const QMetaProperty mp = pmo->property(i);
-			d << "	Property#:" << i << endl;
-			d << "	Type:" << mp.typeName() << endl;
-			d << "	Name:" << mp. name() << endl;
-			d << "	Value:" << cfg.property(mp.name()) << endl << endl;
+			d << " Property# :" << i << endl;
+			d << "      Type :" << mp.typeName() << endl;
+			d << "      Name :" << mp. name() << endl;
+			d << "     Value :" << cfg.property(mp.name()) << endl << endl;
 		}
 		return d;
 	}
 
-	//~ operator QString() const {
-	//~ QString res;
-	//~ res += "Config\x0d\x0a";
+	bool scan_scene_file(const QString &scenepath) {
+		//~ qDebug() << *this;
+		qDebug() << "Scan file" << scenepath;
 
-	//~ const QMetaObject* pmo = this->metaObject();
-	//~ for (int i=0; i < pmo->propertyCount(); ++i) {
-	//~ const QMetaProperty mp = pmo->property(i);
-	//~ res += "Property#:" + QString::number(i);
-	//~ res += "Туре:" + QString(mp.typeName());
-	//~ res += "Name:" + QString(mp. name());
-	//~ res += "Value:" + this->property(mp.name()).toString();
-	//~ }
-	//~ return res;
-	//~ }
+		QFile f{scenepath};
+
+		if (!f.open(QIODevice::ReadOnly)) {
+			qWarning() << "Cannot open file" << scenepath << "for reading";
+			return false;
+		}
+
+		QTextStream in{&f};
+
+		while (!in.atEnd()) {
+			QString line = in.readLine().simplified().toLower();
+			if (line.startsWith("// povviewer:")) {
+				//~ qDebug() << line;
+				QStringList linelist = line.split(" ");
+				//~ qDebug() << linelist;
+				const QMetaObject* pmo = this->metaObject();
+				for (int i=0; i < pmo->propertyCount(); ++i) {
+
+					const QMetaProperty mp = pmo->property(i);
+					QString _name = mp.name();
+					QString _typename = mp.typeName();
+
+					if (_name == "objectName") continue;
+
+					QString _s(_name);
+					_s += "(=.*)?";
+					QRegExp rx_s(_s);
+
+					int kw_index = linelist.indexOf(rx_s);
+					if (kw_index == -1) continue;
+
+					QString _value;
+
+					//~ qDebug() << _name << kw_index << linelist.size();
+
+					int eq_pos = linelist[kw_index].indexOf("=");
+
+					//~ qDebug() << linelist[kw_index] << eq_pos
+					//~ << linelist[kw_index].length();
+
+					if (eq_pos == -1) {	// no equal sign
+						if (kw_index + 2 < linelist.size()) {
+							_value = linelist[kw_index + 2];
+						}
+					} else {
+						if (linelist[kw_index].length() - eq_pos - 1 > 0) {
+							_value = linelist[kw_index].right(
+										 linelist[kw_index].length()
+										 - eq_pos - 1);
+						} else {
+							if (kw_index + 1 < linelist.size()) {
+								_value = linelist[kw_index + 1];
+							}
+						}
+					}
+					if (_value == "") continue;
+					if (_typename == "int") {
+						bool ok;
+						_value.toInt(&ok);
+						if (!ok) {
+							qDebug() << "Cannot change" << _name << "to"
+									 << _value;
+							continue;
+						}
+					}
+					if (_typename == "float") {
+						bool ok;
+						_value.toFloat(&ok);
+						if (!ok) {
+							qDebug() << "Cannot change" << _name << "to"
+									 << _value;
+							continue;
+						}
+					}
+					if (_name.startsWith("window_pos_") && !m_bChgWinPos) {
+						qDebug() << "Cannot change" << _name << "to"
+								 << _value;
+						qDebug() << "Because change_window_pos is false";
+						continue;
+					}
+					if ((_name =="window_width" || _name =="window_height")
+						&& !m_bChgWinSize) {
+						qDebug() << "Cannot change" << _name << "to"
+								 << _value;
+						qDebug() << "Because change_window_size is false";
+						continue;
+					}
+					qDebug() << "Change" << _name << "to" << _value;
+					this->setProperty(_name.toLocal8Bit().constData(), _value);
+				}
+			}
+		}
+		qDebug() << *this;
+		return true;
+	}
 };
 
 #endif // CONFIG_H
