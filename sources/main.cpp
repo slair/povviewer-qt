@@ -146,6 +146,8 @@ int main(int argc, char *argv[])
 
 	cfg.scan_scene_file(fi_scene.absoluteFilePath());
 
+
+
 	return 0;
 	QSurfaceFormat fmt;
 	fmt.setDepthBufferSize(24);

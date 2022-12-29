@@ -22,16 +22,16 @@ class Config : public QObject {
 	Q_PROPERTY(int window_pos_y MEMBER m_iWinPosY)
 
 	Q_PROPERTY(bool change_window_size MEMBER m_bChgWinSize)
-	Q_PROPERTY(uint window_width MEMBER m_uiWinWidth)
-	Q_PROPERTY(uint window_height MEMBER m_uiWinHeight)
+	Q_PROPERTY(qsizetype window_width MEMBER m_uiWinWidth)
+	Q_PROPERTY(qsizetype window_height MEMBER m_uiWinHeight)
 
 private:
 	bool m_bChgWinPos;
 	int m_iWinPosX;
 	int m_iWinPosY;
 	bool m_bChgWinSize;
-	uint m_uiWinWidth;
-	uint m_uiWinHeight;
+	qsizetype m_uiWinWidth;
+	qsizetype m_uiWinHeight;
 
 public:
 	Config();
