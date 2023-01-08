@@ -146,9 +146,10 @@ int main(int argc, char *argv[])
 	QFileInfo fi_scene{filename};
 	qDebug() << "Scene file name" << fi_scene.absoluteFilePath();
 
-	// todo: 1. get scene file folder
+	// fixed: 1. get scene file folder
+	qDebug() << "Scene file dir" << fi_scene.absolutePath();
 
-	// todo: 2. chdir to scene file
+	// todo: 2. chdir to scene file if workdir!=scenedir
 
 	qDebug() << "Working dir" << QDir::currentPath();
 	qDebug() << "Home dir" << QDir::homePath();
@@ -160,9 +161,9 @@ int main(int argc, char *argv[])
 	cfg.scan_scene_file(fi_scene.absoluteFilePath());
 
 	// todo: 3. create scene object
-	Scene* scene = new Scene(cfg, fi_scene.absoluteFilePath());
+	//~ Scene* scene = new Scene(cfg, fi_scene.absoluteFilePath());
 
-	delete scene;
+	//~ delete scene;
 	return 0;
 	QSurfaceFormat fmt;
 	fmt.setDepthBufferSize(24);
