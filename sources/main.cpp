@@ -71,8 +71,10 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 					 , const QString &msg)
 {
 	QByteArray localMsg = msg.toLocal8Bit();
+#ifdef DEBUG_CONTEXT
 	const char *file = context.file ? context.file : "";
 	const char *function = context.function ? context.function : "";
+#endif
 	const char* msg_type;
 	switch (type) {
 	case QtDebugMsg:
@@ -91,8 +93,12 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 		msg_type = "   FATAL";
 		break;
 	}
-	fprintf(stderr, "%s:%u: %s\nDEBUG: %s\n", file, context.line, function
-			, localMsg.constData());
+#ifdef DEBUG_CONTEXT
+	fprintf(stderr, "%s:%u: %s\n%s: %s\n", file, context.line, function
+			, msg_type, localMsg.constData());
+#else
+	fprintf(stderr, "%s: %s\n", msg_type, localMsg.constData());
+#endif
 }
 
 int main(int argc, char *argv[])
@@ -125,10 +131,6 @@ int main(int argc, char *argv[])
 
 	parser.process(app);
 
-	qDebug() << "Working dir" << QDir::currentPath();
-	qDebug() << "Home dir" << QDir::homePath();
-	qDebug() << "Temporary dir" << QDir::tempPath();
-
 	QString filename;
 
 	const QStringList args = parser.positionalArguments();
@@ -144,10 +146,23 @@ int main(int argc, char *argv[])
 	QFileInfo fi_scene{filename};
 	qDebug() << "Scene file name" << fi_scene.absoluteFilePath();
 
+	// todo: 1. get scene file folder
+
+	// todo: 2. chdir to scene file
+
+	qDebug() << "Working dir" << QDir::currentPath();
+	qDebug() << "Home dir" << QDir::homePath();
+	qDebug() << "Temporary dir" << QDir::tempPath();
+
+	// todo: 3. check for local config
+
+	// scan scene file
 	cfg.scan_scene_file(fi_scene.absoluteFilePath());
 
+	// todo: 3. create scene object
+	Scene* scene = new Scene(cfg, fi_scene.absoluteFilePath());
 
-
+	delete scene;
 	return 0;
 	QSurfaceFormat fmt;
 	fmt.setDepthBufferSize(24);
