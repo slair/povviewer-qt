@@ -5,6 +5,8 @@ Makefile.Release
 build
 *.pov
 *.orig
+SciTE.session
+SciTEDirectory.properties
 
 # Prerequisites
 *.d
