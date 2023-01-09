@@ -151,6 +151,7 @@ int main(int argc, char *argv[])
 
 	// todo: 2. chdir to scene file if workdir!=scenedir
 	if (QDir::currentPath() != fi_scene.absolutePath()) {
+
 	}
 
 	qDebug() << "Working dir" << QDir::currentPath();
