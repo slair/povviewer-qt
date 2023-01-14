@@ -1,3 +1,7 @@
+// -*- coding: utf-8 -*-
+/** @file povviewer.h
+ ** Some base settings.
+ **/
 #ifndef POVVIEWER_H
 #define POVVIEWER_H
 

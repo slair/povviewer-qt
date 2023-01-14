@@ -1,8 +1,7 @@
-/****************************************************************************
-**
-**
-**
-****************************************************************************/
+// -*- coding: utf-8 -*-
+/** @file main.cpp
+ ** Main source. Entry point.
+ **/
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -14,6 +13,7 @@
 
 #include "povviewer.h"
 #include "myconfig.h"
+#include "scene.h"
 #include "glwidget.h"
 #include "mainwindow.h"
 
@@ -163,30 +163,32 @@ int main(int argc, char *argv[])
 	qDebug() << "Home dir" << QDir::homePath();
 	qDebug() << "Temporary dir" << QDir::tempPath();
 
-	// todo: 3. check for local config
+	// done: 3. check for local config
 	cfg.load_from_dir(".");
 
-	// todo: 4. scan scene file and change config
+	// done: 4. scan scene file and change config
 	cfg.scan_scene_file(fi_scene.fileName());
 
 	// todo: 5. create scene object
-	//~ Scene* scene = new Scene(cfg, fi_scene.absoluteFilePath());
+	Scene* scene = new Scene(cfg, fi_scene.fileName());
 
 	// todo: 6. create window
 
 	// todo: 7. show window
 
 	//~ delete scene;
+	//~ return app.exec();
 	return 0;
-	QSurfaceFormat fmt;
-	fmt.setDepthBufferSize(24);
+
+	//~ QSurfaceFormat fmt;
+	//~ fmt.setDepthBufferSize(24);
 	//~ if (parser.isSet(multipleSampleOption))
 	//~ fmt.setSamples(4);
 	//~ if (parser.isSet(coreProfileOption)) {
 	//~ fmt.setVersion(3, 2);
 	//~ fmt.setProfile(QSurfaceFormat::CoreProfile);
 	//~ }
-	QSurfaceFormat::setDefaultFormat(fmt);
+	//~ QSurfaceFormat::setDefaultFormat(fmt);
 
 	//~ MainWindow mainWindow;
 
@@ -204,5 +206,5 @@ int main(int argc, char *argv[])
 	//~ else
 	//~ mainWindow.showMaximized();
 
-	return app.exec();
+	//~ return app.exec();
 }

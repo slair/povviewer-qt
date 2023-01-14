@@ -3,10 +3,14 @@ CONFIG += console
 CONFIG += debug
 
 HEADERS       =	sources/myconfig.h \
-				sources/povviewer.h
+				sources/povviewer.h \
+				sources/scene.h \
+				sources/baseobj.h
 
 SOURCES       =	sources/myconfig.cpp \
-				sources/main.cpp
+				sources/main.cpp \
+				sources/scene.cpp \
+				sources/baseobj.cpp
 
 QT           += widgets
 
