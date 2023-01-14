@@ -7,6 +7,7 @@ build
 *.orig
 SciTE.session
 SciTEDirectory.properties
+povviewer.ini
 
 # Prerequisites
 *.d

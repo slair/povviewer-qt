@@ -17,7 +17,41 @@
 #include "glwidget.h"
 #include "mainwindow.h"
 
-static Config cfg;
+#pragma warning(disable : 4100)
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context
+					 , const QString &msg)
+#pragma warning(default : 4100)
+{
+	QByteArray localMsg = msg.toLocal8Bit();
+#ifdef DEBUG_CONTEXT
+	const char *file = context.file ? context.file : "";
+	const char *function = context.function ? context.function : "";
+#endif
+	const char* msg_type;
+	switch (type) {
+	case QtDebugMsg:
+		msg_type = "   DEBUG";
+		break;
+	case QtInfoMsg:
+		msg_type = "    INFO";
+		break;
+	case QtWarningMsg:
+		msg_type = " WARNING";
+		break;
+	case QtCriticalMsg:
+		msg_type = "CRITICAL";
+		break;
+	case QtFatalMsg:
+		msg_type = "   FATAL";
+		break;
+	}
+#ifdef DEBUG_CONTEXT
+	fprintf(stderr, "%s:%u: %s\n%s: %s\n", file, context.line, function
+			, msg_type, localMsg.constData());
+#else
+	fprintf(stderr, "%s: %s\n", msg_type, localMsg.constData());
+#endif
+}
 
 /*
 void verboseMessageHandler(QtMsgType type, const QMessageLogContext &context,
@@ -67,53 +101,21 @@ void verboseMessageHandler(QtMsgType type, const QMessageLogContext &context,
 }
 */
 
-void myMessageOutput(QtMsgType type, const QMessageLogContext &context
-					 , const QString &msg)
-{
-	QByteArray localMsg = msg.toLocal8Bit();
-#ifdef DEBUG_CONTEXT
-	const char *file = context.file ? context.file : "";
-	const char *function = context.function ? context.function : "";
-#endif
-	const char* msg_type;
-	switch (type) {
-	case QtDebugMsg:
-		msg_type = "   DEBUG";
-		break;
-	case QtInfoMsg:
-		msg_type = "    INFO";
-		break;
-	case QtWarningMsg:
-		msg_type = " WARNING";
-		break;
-	case QtCriticalMsg:
-		msg_type = "CRITICAL";
-		break;
-	case QtFatalMsg:
-		msg_type = "   FATAL";
-		break;
-	}
-#ifdef DEBUG_CONTEXT
-	fprintf(stderr, "%s:%u: %s\n%s: %s\n", file, context.line, function
-			, msg_type, localMsg.constData());
-#else
-	fprintf(stderr, "%s: %s\n", msg_type, localMsg.constData());
-#endif
-}
-
 int main(int argc, char *argv[])
 {
-#ifdef NDEBUG
-	qDebug("DEBUG is OFF");
-#else
-	qDebug("DEBUG is ON");
-	qInstallMessageHandler(myMessageOutput);
-#endif
+	#ifdef NDEBUG
+		qDebug("DEBUG is OFF");
+	#else
+		qDebug("DEBUG is ON");
+		qInstallMessageHandler(myMessageOutput);
+	#endif
+
+	static Config cfg;
 
 	QApplication app(argc, argv);
 
-	QCoreApplication::setApplicationName("POV-Ray Viewer");
-	QCoreApplication::setOrganizationName("slairium");
+	QCoreApplication::setApplicationName("povviewer");
+	QCoreApplication::setOrganizationName("povviewer-qt");
 	QCoreApplication::setApplicationVersion(POVVIEWER_VERSION_STR);
 
 	QCommandLineParser parser;
@@ -162,10 +164,10 @@ int main(int argc, char *argv[])
 	qDebug() << "Temporary dir" << QDir::tempPath();
 
 	// todo: 3. check for local config
-	cfg.load_local_config();
+	cfg.load_from_dir(".");
 
 	// todo: 4. scan scene file and change config
-	cfg.scan_scene_file(fi_scene.absoluteFilePath());
+	cfg.scan_scene_file(fi_scene.fileName());
 
 	// todo: 5. create scene object
 	//~ Scene* scene = new Scene(cfg, fi_scene.absoluteFilePath());

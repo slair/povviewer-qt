@@ -12,8 +12,9 @@
 #include <QMetaProperty>
 #include <QTextStream>
 #include <QFile>
-
 #include <QDebug>
+
+#define CFG_FILENAME "povviewer.ini"
 
 class Config : public QObject {
 	Q_OBJECT
@@ -28,7 +29,7 @@ class Config : public QObject {
 	Q_PROPERTY(bool save_local_cfg MEMBER m_bSaveLocalCFG)
 	Q_PROPERTY(bool load_local_cfg MEMBER m_bLoadLocalCFG)
 
-	Q_PROPERTY(bool load_home_cfg MEMBER m_bSaveHomeCFG)
+	Q_PROPERTY(bool save_home_cfg MEMBER m_bSaveHomeCFG)
 
 private:
 	bool m_bChgWinPos;
@@ -40,6 +41,7 @@ private:
 	bool m_bSaveLocalCFG;
 	bool m_bLoadLocalCFG;
 	bool m_bSaveHomeCFG;
+	//~ QString m_SettingsFolder;
 
 public:
 	Config();
@@ -47,7 +49,9 @@ public:
 
 	friend QDebug operator << (QDebug d, const Config& cfg);
 
-	bool scan_scene_file(const QString &scenepath);
+	bool load_from_dir(const QString& dir, int load_user=0);
+	bool save_to_dir(const QString& dir, int save_user=0);
+	bool scan_scene_file(const QString& scenepath);
 };
 
 #endif // CONFIG_H
