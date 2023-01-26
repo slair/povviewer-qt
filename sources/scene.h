@@ -26,7 +26,8 @@ public:
 			   , const QString& config_file_name);	// %TEMP%\\scene.cfg
 
 private:
-	QString m_povdumpbin;	// fullpath to povdump or povdump64
+	QString m_povdumpbin;	// executable name: povdump64.exe or povdump64
+	QString m_fppovdumpbin;	// fullpath to povdump or povdump64
 	//~ ViewCamera* m_camera;
 	QList<BaseObj*> m_objects;
 	double m_clock;
