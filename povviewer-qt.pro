@@ -1,4 +1,8 @@
-CONFIG += c++11
+#~ CONFIG += c++11
+
+linux {
+	QMAKE_CXXFLAGS += -std=c++11
+}
 
 CONFIG += console
 
