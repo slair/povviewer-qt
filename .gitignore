@@ -8,6 +8,7 @@ build
 SciTE.session
 SciTEDirectory.properties
 povviewer.ini
+test-run.sh
 
 # Prerequisites
 *.d
