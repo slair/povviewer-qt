@@ -1,6 +1,8 @@
 #~ CONFIG += c++11
 
-linux {
+message($$QMAKESPEC)
+
+linux-g++ {
 	QMAKE_CXXFLAGS += -std=c++11
 }
 
