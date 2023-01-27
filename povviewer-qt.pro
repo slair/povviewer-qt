@@ -1,3 +1,5 @@
+CONFIG += c++11
+
 CONFIG += console
 
 CONFIG += debug
