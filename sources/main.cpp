@@ -140,6 +140,7 @@ int main(int argc, char *argv[])
 		if (QFile::exists(POVVIEWER_DEFAULT_POV_SCENE_NAME)) {
 			filename = POVVIEWER_DEFAULT_POV_SCENE_NAME;
 		} else {
+			qCritical().nospace() << "No '" << POVVIEWER_DEFAULT_POV_SCENE_NAME << "' found";
 			return 0;
 		}
 	} else {
