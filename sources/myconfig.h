@@ -30,6 +30,8 @@ class Config : public QObject {
 	Q_PROPERTY(bool save_home_cfg MEMBER m_bSaveHomeCFG)
 
 private:
+	// todo: m_dirty flag
+	bool m_dirty;
 	bool m_bChgWinPos;
 	int m_iWinPosX;
 	int m_iWinPosY;
