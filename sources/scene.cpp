@@ -40,7 +40,7 @@ Scene::Scene(Config& cfg, const QString& filename)
 
 	// done: 3. find povdump via system PATH
 	QStringList env = QProcess::systemEnvironment();
-	qDebug() << "env =" << env;
+	//~ qDebug() << "env =" << env;
 
 	QStringList path;
 	for(int i = 0; i < env.size(); ++i) {
@@ -52,7 +52,7 @@ Scene::Scene(Config& cfg, const QString& filename)
 	if (path.size() == 0) {
 		qWarning() << "Empty PATH environment variable";
 	}
-	qDebug() << "path =" << path;
+	//~ qDebug() << "path =" << path;
 
 	for(int i = 0; i < path.size(); ++i) {
 		if (path.at(i) != "") {
