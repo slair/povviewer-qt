@@ -18,16 +18,14 @@ class Scene : public QObject {
 	Q_OBJECT
 
 public:
-	Scene(Config& cfg, const QString& filename);
+	Scene(Config* cfg, const QString& filename);
 	~Scene();
-	bool parse(Config& cfg
-			   , const QString& scene_file_name		// scene.pov
-			   , const QString& dump_file_name		// %TEMP\\scene.dump
-			   , const QString& config_file_name);	// %TEMP%\\scene.cfg
+	bool parse();
+	friend QDebug operator << (QDebug d, const Scene& scene);
 
 private:
-	QString m_povdumpbin;	// executable name: povdump64.exe or povdump64
-	QString m_fppovdumpbin;	// fullpath to povdump or povdump64
+	Config* m_cfg;
+	QString m_scenefilename;
 	//~ ViewCamera* m_camera;
 	QList<BaseObj*> m_objects;
 	double m_clock;

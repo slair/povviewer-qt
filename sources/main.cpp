@@ -46,7 +46,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 		break;
 	}
 #ifdef DEBUG_CONTEXT
-	fprintf(stderr, "%s:%u: %s\n%s: %s\n", file, context.line, function
+	fprintf(stderr, "%s:%u: %s\n%s: %s\n\n", file, context.line, function
 			, msg_type, localMsg.constData());
 #else
 	fprintf(stderr, "%s: %s\n", msg_type, localMsg.constData());
@@ -103,12 +103,16 @@ void verboseMessageHandler(QtMsgType type, const QMessageLogContext &context,
 
 int main(int argc, char *argv[])
 {
-	#ifdef NDEBUG
-		qDebug("DEBUG is OFF");
-	#else
-		qDebug("DEBUG is ON");
-		qInstallMessageHandler(myMessageOutput);
-	#endif
+#ifdef NDEBUG
+	qDebug("DEBUG is OFF");
+#else
+	qDebug("DEBUG is ON");
+	qInstallMessageHandler(myMessageOutput);
+#endif
+
+	qDebug() << "Working dir" << QDir::currentPath();
+	qDebug() << "Home dir" << QDir::homePath();
+	qDebug() << "Temporary dir" << QDir::tempPath();
 
 	static Config cfg;
 
@@ -140,7 +144,9 @@ int main(int argc, char *argv[])
 		if (QFile::exists(POVVIEWER_DEFAULT_POV_SCENE_NAME)) {
 			filename = POVVIEWER_DEFAULT_POV_SCENE_NAME;
 		} else {
-			qCritical().nospace() << "No '" << POVVIEWER_DEFAULT_POV_SCENE_NAME << "' found";
+			qCritical().nospace() << "No '"
+								  << POVVIEWER_DEFAULT_POV_SCENE_NAME
+								  << "' found";
 			return 0;
 		}
 	} else {
@@ -156,23 +162,13 @@ int main(int argc, char *argv[])
 	if (QDir::currentPath() != fi_scene.absolutePath()) {
 		if (!QDir::setCurrent(fi_scene.absolutePath())) {
 			qCritical() << "Cannot change directory to '"
-					 << fi_scene.absolutePath() << "'";
+						<< fi_scene.absolutePath() << "'";
 		}
 	}
 
-	qDebug() << "Working dir" << QDir::currentPath();
-	qDebug() << "Home dir" << QDir::homePath();
-	qDebug() << "Temporary dir" << QDir::tempPath();
-
-	// done: 3. check for local config
-	cfg.load_from_dir(".");
-
-	// done: 4. scan scene file and change config
-	cfg.scan_scene_file(fi_scene.fileName());
-
-	// todo: 5. create scene object
-	Scene* scene = new Scene(cfg, fi_scene.fileName());
-
+	// done: 5. create scene object
+	Scene* scene = new Scene(&cfg, fi_scene.fileName());
+	qDebug() << *scene;
 	// todo: 6. create window
 
 	// todo: 7. show window

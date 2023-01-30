@@ -7,7 +7,7 @@ build
 *.orig
 SciTE.session
 SciTEDirectory.properties
-povviewer.ini
+povviewer-qt.ini
 test-run.sh
 mytasks.py
 

@@ -12,7 +12,7 @@
 #include <QFile>
 #include <QDebug>
 
-#define CFG_FILENAME "povviewer.ini"
+#define CFG_FILENAME "povviewer-qt.ini"
 
 class Config : public QObject {
 	Q_OBJECT
@@ -28,10 +28,10 @@ class Config : public QObject {
 	Q_PROPERTY(bool load_local_cfg MEMBER m_bLoadLocalCFG)
 
 	Q_PROPERTY(bool save_home_cfg MEMBER m_bSaveHomeCFG)
+	Q_PROPERTY(QString path_to_povdump MEMBER m_fppovdumpbin)
 
 private:
-	// todo: m_dirty flag
-	bool m_dirty;
+	bool m_Changed;
 	bool m_bChgWinPos;
 	int m_iWinPosX;
 	int m_iWinPosY;
@@ -41,7 +41,8 @@ private:
 	bool m_bSaveLocalCFG;
 	bool m_bLoadLocalCFG;
 	bool m_bSaveHomeCFG;
-	//~ QString m_SettingsFolder;
+	QString m_povdumpbin;	// executable name: povdump64.exe or povdump64
+	QString m_fppovdumpbin;	// fullpath to povdump or povdump64
 
 public:
 	Config();
@@ -52,6 +53,7 @@ public:
 	bool load_from_dir(const QString& dir, int load_user=0);
 	bool save_to_dir(const QString& dir, int save_user=0);
 	bool scan_scene_file(const QString& scenepath);
+	bool find_povdump(const QString& povdump_name);
 };
 
 #endif // CONFIG_H

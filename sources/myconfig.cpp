@@ -3,6 +3,8 @@
  ** Config for povviewer.
  **/
 
+#include <QSysInfo>
+#include <QProcess>
 #include <QDir>
 #include <QSettings>
 
@@ -22,7 +24,8 @@ bool Config::save_to_dir(const QString& dir, int save_user)
 		qDebug() << "Saving" << filename << "to" << dir << "folder.";
 	} else {
 		settings = new QSettings(QSettings::IniFormat, QSettings::UserScope
-								 , "povviewer-qt", "povviewer");
+								 , "povviewer-qt", "povviewer-qt");
+		// folder, file
 		qDebug() << "Saving" << CFG_FILENAME << "to HOME folder.";
 	}
 	const QMetaObject* pmo = metaObject();
@@ -38,17 +41,23 @@ bool Config::save_to_dir(const QString& dir, int save_user)
 
 Config::~Config()
 {
-	if (m_bSaveLocalCFG) {
-		save_to_dir(".");
-	}
-	if (m_bSaveHomeCFG) {
-		save_to_dir(".", 1);
+	qDebug() << "Config::~Config()";
+	if (m_Changed) {
+		if (m_bSaveLocalCFG) {
+			save_to_dir(".");
+		}
+		if (m_bSaveHomeCFG) {
+			save_to_dir(".", 1);
+		}
+	} else {
+		qDebug() << "Config not changed";
 	}
 }
 
 Config::Config() : m_bChgWinPos(false), m_iWinPosX(80), m_iWinPosY(80)
 	, m_bChgWinSize(true), m_uiWinWidth(320), m_uiWinHeight(240)
-	, m_bSaveLocalCFG(true), m_bLoadLocalCFG(true), m_bSaveHomeCFG(true)
+	, m_bSaveLocalCFG(false), m_bLoadLocalCFG(true), m_bSaveHomeCFG(true)
+	, m_Changed(false)
 {
 	//~ m_SettingsFolder = QDir::homePath();
 	//~ qDebug() << "load_from_dir(" << m_SettingsFolder << ")";
@@ -67,6 +76,70 @@ QDebug operator << (QDebug d, const Config& cfg)
 		d << "     Value :" << cfg.property(mp.name()) << endl << endl;
 	}
 	return d;
+}
+
+bool Config::find_povdump(const QString& povdump_name)
+{
+	// detect arch
+	QString arch = QSysInfo::currentCpuArchitecture();
+	qDebug() << "arch =" << arch;
+
+	// detect platform
+	QString kernel = QSysInfo::kernelType();
+	qDebug() << "kernel =" << kernel;
+
+	QChar sep;
+	if (kernel == "winnt") {
+		sep = ';';
+		if (arch == "x86_64") {
+			m_povdumpbin = "povdump64.exe";
+		} else {
+			m_povdumpbin = "povdump.exe";
+		}
+	} else {
+		sep = ':';
+		if (arch == "x86_64") {
+			m_povdumpbin = "povdump64";
+		} else {
+			m_povdumpbin = "povdump";
+		}
+	}
+	if (povdump_name != "") {
+		m_povdumpbin = povdump_name;
+	}
+	qDebug() << "m_povdumpbin =" << m_povdumpbin;
+
+	// find povdump via system PATH
+	QStringList env = QProcess::systemEnvironment();
+	//~ qDebug() << "env =" << env;
+
+	QStringList path;
+	for(int i = 0; i < env.size(); ++i) {
+		if (env.at(i).startsWith("PATH=", Qt::CaseInsensitive)) {
+			path = env.at(i).right(env.at(i).size() - 5).split(sep);
+			break;
+		}
+	}
+	if (path.size() == 0) {
+		qWarning() << "Empty PATH environment variable";
+	}
+	//~ qDebug() << "path =" << path;
+
+	for(int i = 0; i < path.size(); ++i) {
+		if (path.at(i) != "") {
+			if (QFile::exists(path.at(i) + QDir::separator() + m_povdumpbin)) {
+				m_fppovdumpbin = path.at(i) + QDir::separator() + m_povdumpbin;
+				break;
+			}
+		}
+	}
+	qDebug() << "m_fppovdumpbin =" << m_fppovdumpbin;
+
+	if (m_fppovdumpbin.isEmpty()) {
+		qWarning() << m_povdumpbin << "not found via PATH variable";
+		return false;
+	}
+	return true;
 }
 
 bool Config::scan_scene_file(const QString &scenepath)
@@ -163,6 +236,7 @@ bool Config::scan_scene_file(const QString &scenepath)
 				}
 				qDebug() << "Change" << _name << "to" << _value;
 				this->setProperty(_name.toLocal8Bit().constData(), _value);
+				m_Changed = true;
 			}
 		}
 	}
@@ -172,28 +246,32 @@ bool Config::scan_scene_file(const QString &scenepath)
 
 bool Config::load_from_dir(const QString& dir, int load_user)
 {
-	bool res = false;
+	bool empty_home_config = false;
 	QDir d = QDir(dir);
-
 	QSettings* settings;
+
 	if (load_user == 0) {
 
 		//~ QString filename = d.absoluteFilePath(CFG_FILENAME);
 		QString filename = d.relativeFilePath(CFG_FILENAME);
 
-		settings = new QSettings(filename, QSettings::IniFormat);
-		qDebug() << "Loading" << filename << "from" << dir << "folder.";
-
 		if (!QFile::exists(filename)) {
 			qDebug() << "No" << filename << "file found at" << dir
 					 << "folder.";
-			res = false;
+			return false;
 		}
+
+		settings = new QSettings(filename, QSettings::IniFormat);
+		qDebug() << "Loading" << filename << "from" << dir << "folder.";
+
 	} else {
 		settings = new QSettings(QSettings::IniFormat, QSettings::UserScope
-								 , "povviewer-qt", "povviewer");
+								 , "povviewer-qt", "povviewer-qt");
 		qDebug() << "Loading" << CFG_FILENAME << "from HOME folder.";
-		res = true;
+		//~ qDebug() << settings->allKeys().size();
+		if (settings->allKeys().size() == 0) {
+			empty_home_config = true;
+		}
 	}
 
 	const QMetaObject* pmo = metaObject();
@@ -204,10 +282,28 @@ bool Config::load_from_dir(const QString& dir, int load_user)
 		if (settings->contains(_name)) {
 			setProperty(_name.toLocal8Bit().constData()
 						, settings->value(_name));
+			m_Changed = true;
 		}
 	}
 
 	delete settings;
 
-	return res;
+	if (load_user != 0) {
+		// load from HOME
+		if (empty_home_config) {
+			m_Changed = true;
+		} else {
+			m_Changed = false;
+		}
+		if (m_fppovdumpbin.isEmpty()) {
+			find_povdump("");
+		} else {
+			if (!QFile::exists(m_fppovdumpbin)) {
+				qCritical() << m_fppovdumpbin << "not found";
+				find_povdump("");
+			}
+		}
+	}
+
+	return true;
 }
