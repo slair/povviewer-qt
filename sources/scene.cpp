@@ -35,6 +35,31 @@ Scene::~Scene()
 	qDebug() << "Scene::~Scene()";
 }
 
+bool delete_file(const QString& filepath)
+{
+	if (QFile::exists(filepath)) {
+		if (!QFile::remove(filepath)) {
+			qWarning() << "Cannot delete file" << filepath;
+			return false;
+		}
+	}
+	return true;
+}
+
+bool delete_zero_file(const QString& filepath)
+{
+	QFile f(filepath);
+	if (f.exists()) {
+		if (f.size() == 0) {
+			if (!f.remove()) {
+				qWarning() << "Cannot delete file" << filepath;
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 bool Scene::parse()
 {
 	// done:   3. check for local config
@@ -43,17 +68,14 @@ bool Scene::parse()
 	// done:   4. scan scene file and change config
 	m_cfg->scan_scene_file(m_scenefilename);
 
-	if (QFile::exists(m_cfg->path_to_dump())) {
-		if (!QFile::remove(m_cfg->path_to_dump())) {
-			qWarning() << "Cannot delete file" << m_cfg->path_to_dump();
-		}
-	}
+	delete_file(m_cfg->path_to_dump());
+	delete_file(m_cfg->path_to_cfg());
 
-	if (QFile::exists(m_cfg->path_to_cfg())) {
-		if (!QFile::remove(m_cfg->path_to_cfg())) {
-			qWarning() << "Cannot delete file" << m_cfg->path_to_cfg();
-		}
-	}
+	delete_file(m_cfg->path_to_debuglog());
+	delete_file(m_cfg->path_to_fatallog());
+	delete_file(m_cfg->path_to_renderlog());
+	delete_file(m_cfg->path_to_statisticlog());
+	delete_file(m_cfg->path_to_warninglog());
 
 	m_cfg->dump_cfg();	// create binary config
 
@@ -67,8 +89,14 @@ bool Scene::parse()
 	args << QString("+I%1").arg(m_scenefilename);
 	args << QString("+DF%1").arg(m_cfg->path_to_dump());
 	args << QString("+TC%1").arg(m_cfg->path_to_cfg());
-	// todo:  10. add streams +GDfile +GFfile +GRfile +GSfile +GWfile
+
+	// done:  10. add streams +GDfile +GFfile +GRfile +GSfile +GWfile
 	// debug, fatal, render, statistic, and warning
+	args << QString("+GD%1").arg(m_cfg->path_to_debuglog());
+	args << QString("+GF%1").arg(m_cfg->path_to_fatallog());
+	args << QString("+GR%1").arg(m_cfg->path_to_renderlog());
+	args << QString("+GS%1").arg(m_cfg->path_to_statisticlog());
+	args << QString("+GW%1").arg(m_cfg->path_to_warninglog());
 	qDebug() << args;
 
 	povdump.start(m_cfg->path_to_povdump(), args);
@@ -92,6 +120,13 @@ bool Scene::parse()
 		qDebug() << "result:" << result;
 	}
 
-	// todo:   9. read dump
+	delete_zero_file(m_cfg->path_to_debuglog());
+	delete_zero_file(m_cfg->path_to_fatallog());
+	delete_zero_file(m_cfg->path_to_renderlog());
+	delete_zero_file(m_cfg->path_to_statisticlog());
+	delete_zero_file(m_cfg->path_to_warninglog());
+	// todo:   9. check logs for errors
+
+	// todo:  11. read dump
 	return false;
 }

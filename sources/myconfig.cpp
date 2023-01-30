@@ -59,6 +59,11 @@ Config::Config() : m_bChgWinPos(false), m_iWinPosX(80), m_iWinPosY(80)
 	, m_bSaveLocalCFG(false), m_bLoadLocalCFG(true), m_bSaveHomeCFG(true)
 	, m_Changed(false), m_fp_dump("c:\\temp\\scene.dump")
 	, m_fp_cfg("c:\\temp\\scene.cfg")
+	, m_fp_debug("debug.log")
+	, m_fp_fatal("fatal.log")
+	, m_fp_render("render.log")
+	, m_fp_statistic("statistic.log")
+	, m_fp_warning("warning.log")
 {
 	//~ m_SettingsFolder = QDir::homePath();
 	//~ qDebug() << "load_from_dir(" << m_SettingsFolder << ")";

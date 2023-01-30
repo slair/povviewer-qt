@@ -36,6 +36,17 @@ class Config : public QObject {
 	Q_PROPERTY(QString path_to_cfg READ path_to_cfg
 			   WRITE set_path_to_cfg)
 
+	Q_PROPERTY(QString path_to_debuglog READ path_to_debuglog
+			   WRITE set_path_to_debuglog)
+	Q_PROPERTY(QString path_to_fatallog READ path_to_fatallog
+			   WRITE set_path_to_fatallog)
+	Q_PROPERTY(QString path_to_renderlog READ path_to_renderlog
+			   WRITE set_path_to_renderlog)
+	Q_PROPERTY(QString path_to_statisticlog READ path_to_statisticlog
+			   WRITE set_path_to_statisticlog)
+	Q_PROPERTY(QString path_to_warninglog READ path_to_warninglog
+			   WRITE set_path_to_warninglog)
+
 private:
 	bool m_Changed;
 	bool m_bChgWinPos;
@@ -51,8 +62,44 @@ private:
 	QString m_fp_povdumpbin;	// fullpath to povdump or povdump64
 	QString m_fp_dump;			// fullpath to dump
 	QString m_fp_cfg;			// fullpath to binary cfg
+	QString m_fp_debug;			// fullpath to debug log
+	QString m_fp_fatal;			// fullpath to fatal log
+	QString m_fp_render;		// fullpath to render log
+	QString m_fp_statistic;		// fullpath to statistic log
+	QString m_fp_warning;		// fullpath to warning log
 
 public:
+	QString path_to_debuglog() const {
+		return m_fp_debug;
+	}
+	void set_path_to_debuglog(const QString& s) {
+		m_fp_debug = s;
+	}
+	QString path_to_fatallog() const {
+		return m_fp_fatal;
+	}
+	void set_path_to_fatallog(const QString& s) {
+		m_fp_fatal = s;
+	}
+	QString path_to_renderlog() const {
+		return m_fp_render;
+	}
+	void set_path_to_renderlog(const QString& s) {
+		m_fp_render = s;
+	}
+	QString path_to_statisticlog() const {
+		return m_fp_statistic;
+	}
+	void set_path_to_statisticlog(const QString& s) {
+		m_fp_statistic = s;
+	}
+	QString path_to_warninglog() const {
+		return m_fp_warning;
+	}
+	void set_path_to_warninglog(const QString& s) {
+		m_fp_warning = s;
+	}
+
 	QString path_to_povdump() const {
 		return m_fp_povdumpbin;
 	}
