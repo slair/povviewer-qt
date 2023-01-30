@@ -10,7 +10,7 @@
 
 #include "myconfig.h"
 
-bool Config::save_to_dir(const QString& dir, int save_user)
+bool Config::save_to_dir(const QString& dir, int save_user) const
 {
 	bool res = true;
 	QDir d = QDir(dir);
@@ -57,7 +57,8 @@ Config::~Config()
 Config::Config() : m_bChgWinPos(false), m_iWinPosX(80), m_iWinPosY(80)
 	, m_bChgWinSize(true), m_uiWinWidth(320), m_uiWinHeight(240)
 	, m_bSaveLocalCFG(false), m_bLoadLocalCFG(true), m_bSaveHomeCFG(true)
-	, m_Changed(false)
+	, m_Changed(false), m_fp_dump("c:\\temp\\scene.dump")
+	, m_fp_cfg("c:\\temp\\scene.cfg")
 {
 	//~ m_SettingsFolder = QDir::homePath();
 	//~ qDebug() << "load_from_dir(" << m_SettingsFolder << ")";
@@ -128,14 +129,14 @@ bool Config::find_povdump(const QString& povdump_name)
 	for(int i = 0; i < path.size(); ++i) {
 		if (path.at(i) != "") {
 			if (QFile::exists(path.at(i) + QDir::separator() + m_povdumpbin)) {
-				m_fppovdumpbin = path.at(i) + QDir::separator() + m_povdumpbin;
+				m_fp_povdumpbin = path.at(i) + QDir::separator() + m_povdumpbin;
 				break;
 			}
 		}
 	}
-	qDebug() << "m_fppovdumpbin =" << m_fppovdumpbin;
+	qDebug() << "m_fp_povdumpbin =" << m_fp_povdumpbin;
 
-	if (m_fppovdumpbin.isEmpty()) {
+	if (m_fp_povdumpbin.isEmpty()) {
 		qWarning() << m_povdumpbin << "not found via PATH variable";
 		return false;
 	}
@@ -295,15 +296,22 @@ bool Config::load_from_dir(const QString& dir, int load_user)
 		} else {
 			m_Changed = false;
 		}
-		if (m_fppovdumpbin.isEmpty()) {
+		if (m_fp_povdumpbin.isEmpty()) {
 			find_povdump("");
 		} else {
-			if (!QFile::exists(m_fppovdumpbin)) {
-				qCritical() << m_fppovdumpbin << "not found";
+			if (!QFile::exists(m_fp_povdumpbin)) {
+				qCritical() << m_fp_povdumpbin << "not found";
 				find_povdump("");
 			}
 		}
 	}
 
 	return true;
+}
+
+bool Config::dump_cfg() const
+{
+	FILE* f = fopen(m_fp_cfg.toLocal8Bit().constData(), "w");
+	fclose(f);
+	return false;
 }

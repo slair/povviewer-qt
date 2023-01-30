@@ -3,6 +3,7 @@ Makefile
 Makefile.Debug
 Makefile.Release
 build
+*.log
 *.pov
 *.orig
 SciTE.session

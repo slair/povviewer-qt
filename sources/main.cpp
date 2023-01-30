@@ -155,10 +155,10 @@ int main(int argc, char *argv[])
 	QFileInfo fi_scene{filename};
 	qDebug() << "Scene file name" << fi_scene.absoluteFilePath();
 
-	// done: 1. get scene file folder
+	// done:   1. get scene file folder
 	qDebug() << "Scene file dir" << fi_scene.absolutePath();
 
-	// done: 2. chdir to scene file if workdir!=scenedir
+	// done:   2. chdir to scene file if workdir!=scenedir
 	if (QDir::currentPath() != fi_scene.absolutePath()) {
 		if (!QDir::setCurrent(fi_scene.absolutePath())) {
 			qCritical() << "Cannot change directory to '"
@@ -166,12 +166,12 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	// done: 5. create scene object
+	// done:   5. create scene object
 	Scene* scene = new Scene(&cfg, fi_scene.fileName());
 	qDebug() << *scene;
-	// todo: 6. create window
+	// todo:   6. create window
 
-	// todo: 7. show window
+	// todo:   7. show window
 
 	//~ delete scene;
 	//~ return app.exec();
