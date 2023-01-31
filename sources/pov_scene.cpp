@@ -1,23 +1,39 @@
 // -*- coding: utf-8 -*-
-/** @file scene.cpp
- ** Scene and related.
+/** @file pov_scene.cpp
+ ** pov_Scene and related.
  **/
 
 #include <QProcess>
-#include <qmath.h>
+#include <QDataStream>
+//~ #include <qmath.h>
 
-#include "scene.h"
+#include "pov_scene.h"
 
-Scene::Scene(Config* cfg, const QString& filename)
+#include "pov_sphere.h"
+
+pov_Scene::pov_Scene(Config* cfg, const QString& filename)
 {
+	m_objects.clear();
 	m_cfg = cfg;
 	m_scenefilename = filename;
+	m_clockvalue = 123.456;
 	parse();
 }
 
-QDebug operator << (QDebug d, const Scene& scene)
+pov_Scene::~pov_Scene()
 {
-	d << "\n+Scene" << endl;
+	qDebug() << "pov_Scene::~pov_Scene()";
+	for(int i = 0; i < m_objects.size(); i++)
+	{
+		qDebug().nospace() << "delete m_objects[" << i << "];";
+		delete m_objects[i];
+	}
+	m_objects.clear();
+}
+
+QDebug operator << (QDebug d, const pov_Scene& scene)
+{
+	d << "\n+pov_Scene" << endl;
 	const QMetaObject* pmo = scene.metaObject();
 	for (int i=0; i < pmo->propertyCount(); ++i) {
 		const QMetaProperty mp = pmo->property(i);
@@ -26,13 +42,16 @@ QDebug operator << (QDebug d, const Scene& scene)
 		d << "      Name :" << mp. name() << endl;
 		d << "     Value :" << scene.property(mp.name()) << endl;
 	}
-	d << "\n-Scene";
-	return d;
-}
 
-Scene::~Scene()
-{
-	qDebug() << "Scene::~Scene()";
+	d << "scene.m_objects.size() =" << scene.m_objects.size() << endl;
+
+	for(int i = 0; i < scene.m_objects.size(); i++)
+	{
+		d << *scene.m_objects[i];
+		d << *(pov_Sphere*)scene.m_objects[i];
+	}
+	d << "\n-pov_Scene";
+	return d;
 }
 
 bool delete_file(const QString& filepath)
@@ -60,7 +79,7 @@ bool delete_zero_file(const QString& filepath)
 	return true;
 }
 
-bool Scene::parse()
+bool pov_Scene::parse()
 {
 	// done:   3. check for local config
 	m_cfg->load_from_dir(".");
@@ -128,5 +147,49 @@ bool Scene::parse()
 	// todo:   9. check logs for errors
 
 	// todo:  11. read dump
+	QFile dumpfile(m_cfg->path_to_dump());
+	dumpfile.open(QFile::ReadOnly);
+	QDataStream ds(&dumpfile);
+	ds.setVersion(QDataStream::Qt_4_8);
+	char* tmp = new char[5];
+	tmp[4] = 0;
+	uint readed;
+	readed = ds.readRawData(tmp, 4);
+
+	readed = ds.readRawData(tmp, 4);
+	if (readed != 4 || strncmp(tmp, "SCNE", 4) != 0) {
+		qDebug() << "SCNE is missing";
+		delete [] tmp;
+		dumpfile.close();
+		return false;
+	}
+	readed = ds.readRawData(tmp, 4);
+	if (readed != 4 || strncmp(tmp, "FRME", 4) != 0) {
+		qDebug() << "FRME is missing";
+		delete [] tmp;
+		dumpfile.close();
+		return false;
+	}
+	readed = ds.readRawData((char*)&m_clockvalue, sizeof(m_clockvalue));
+
+	for(;;) {
+		readed = ds.readRawData(tmp, 4);
+		if (readed == 0) {
+			break;	// eof
+		}
+		qDebug() << "readed:" << readed;
+		qDebug() << "tmp:" << tmp;
+		if (!strncmp(tmp, "SPHR", 4)) {
+			qDebug() << "Sphere found";
+			pov_Sphere* obj = new pov_Sphere(this);
+			obj->read(ds);
+			qDebug() << *obj;
+			m_objects.append(obj);
+			qDebug() << m_objects.size();
+		} else {
+		}
+	}
+	delete [] tmp;
+	dumpfile.close();
 	return false;
 }

@@ -3,8 +3,8 @@
  ** Config for povviewer.
  **/
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef MYCONFIG_H
+#define MYCONFIG_H
 
 #include <QObject>
 #include <QMetaProperty>
@@ -133,5 +133,5 @@ public:
 	bool dump_cfg() const;
 };
 
-#endif // CONFIG_H
+#endif // MYCONFIG_H
 

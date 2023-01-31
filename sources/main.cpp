@@ -13,7 +13,7 @@
 
 #include "povviewer.h"
 #include "myconfig.h"
-#include "scene.h"
+#include "pov_scene.h"
 #include "glwidget.h"
 #include "mainwindow.h"
 
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
 	}
 
 	// done:   5. create scene object
-	Scene* scene = new Scene(&cfg, fi_scene.fileName());
+	pov_Scene* scene = new pov_Scene(&cfg, fi_scene.fileName());
 	qDebug() << *scene;
 	// todo:   6. create window
 
@@ -175,6 +175,7 @@ int main(int argc, char *argv[])
 
 	//~ delete scene;
 	//~ return app.exec();
+	delete scene;
 	return 0;
 
 	//~ QSurfaceFormat fmt;

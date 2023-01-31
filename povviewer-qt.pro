@@ -12,13 +12,17 @@ CONFIG += debug
 
 HEADERS       =	sources/myconfig.h \
 				sources/povviewer.h \
-				sources/scene.h \
-				sources/baseobj.h
+				sources/pov_scene.h \
+				sources/pov_transform.h \
+				sources/pov_baseobject.h \
+				sources/pov_sphere.h
 
 SOURCES       =	sources/myconfig.cpp \
 				sources/main.cpp \
-				sources/scene.cpp \
-				sources/baseobj.cpp
+				sources/pov_scene.cpp \
+				sources/pov_transform.cpp \
+				sources/pov_baseobject.cpp \
+				sources/pov_sphere.cpp
 
 QT           += widgets
 
