@@ -3,29 +3,26 @@
  ** pov_Transform and related.
  **/
 
-#include "pov_transform.h"
-
-#include <string.h>
 //~ #include <GL/gl.h>
+#include <QDebug>
+//~ #include <string.h>
+
+#include "pov_transform.h"
 
 pov_Transform::pov_Transform()
 {
 	m_matrix = new double[16];
 	memset(m_matrix, 0, 16*sizeof(double));
-	/*
-	for (int i; i<4; i++)
-	{
-		matrix[i][0] = 0;
-		matrix[i][1] = 0;
-		matrix[i][2] = 0;
-		matrix[i][3] = 0;
-	}
-	*/
 }
 
 pov_Transform::~pov_Transform()
 {
 	delete [] m_matrix;
+}
+
+double pov_Transform::operator[](const int idx) const
+{
+	return m_matrix[idx];
 }
 
 //~ void pov_Transform::apply()
@@ -43,10 +40,18 @@ pov_Transform::~pov_Transform()
 
 int pov_Transform::read(QDataStream& ds)
 {
-	int readed = ds.readRawData((char*)&m_matrix, 16*sizeof(double));
+	int readed = ds.readRawData((char*)m_matrix, 16*sizeof(double));
 	return readed;
 }
 
+QDebug operator<<(QDebug d, const pov_Transform& t)
+{
+	d << "\t\t" << t[0] << ", " << t[1] << ", " << t[2] << ", " << t[3] << "," << endl;
+	d << "\t\t" << t[4] << ", " << t[5] << ", " << t[6] << ", " << t[7] << "," << endl;
+	d << "\t\t" << t[8] << ", " << t[9] << ", " << t[10] << ", " << t[11] << "," << endl;
+	d << "\t\t" << t[12] << ", " << t[13] << ", " << t[14] << ", " << t[15];
+	return d;
+}
 //~ vec3d pov_Transform::get_scale() const
 //~ {
 	//~ return vec3d(matrix[0], matrix[5], matrix[10]);

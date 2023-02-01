@@ -169,13 +169,22 @@ int main(int argc, char *argv[])
 	// done:   5. create scene object
 	pov_Scene* scene = new pov_Scene(&cfg, fi_scene.fileName());
 	qDebug() << *scene;
+
+	QSurfaceFormat fmt;
+	fmt.setDepthBufferSize(24);
+	//~ fmt.setSamples(4);
+	//~ fmt.setVersion(3, 2);
+	//~ fmt.setProfile(QSurfaceFormat::CoreProfile);
+	QSurfaceFormat::setDefaultFormat(fmt);
+
 	// todo:   6. create window
+	MainWindow main_window(scene);
 
 	// todo:   7. show window
+	main_window.show();
 
 	//~ delete scene;
-	//~ return app.exec();
-	delete scene;
+	return app.exec();
 	return 0;
 
 	//~ QSurfaceFormat fmt;

@@ -8,9 +8,7 @@
 pov_Sphere::pov_Sphere(pov_Scene* s) : pov_BaseObject(s)
 {
 	m_tag = "SPHR";
-	m_center[0] = 1;
-	m_center[1] = 2;
-	m_center[2] = 3;
+	m_center = vec3d(1, 2, 3);
 	m_radius = 0.5;
 }
 
@@ -20,7 +18,9 @@ pov_Sphere::~pov_Sphere()
 
 QDebug operator << (QDebug d, const pov_Sphere& obj)
 {
-	d << "sphere";
+	d << (pov_BaseObject)obj;
+	d << "\tcenter: " << obj.m_center << endl;
+	d << "\tradius: " << obj.m_radius << endl;
 	return d;
 }
 

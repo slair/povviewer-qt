@@ -8,12 +8,13 @@
 #include <QDataStream>
 
 #include "pov_baseobject.h"
+#include "vec3d.h"
 
 //~ class pov_baseobject;
 
 class pov_Sphere : public pov_BaseObject {
 private:
-	double m_center[3];
+	vec3d m_center;
 	double m_radius;
 	//~ void fix_sphere();
 	//~ void tesselate() const;

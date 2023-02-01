@@ -23,8 +23,7 @@ pov_Scene::pov_Scene(Config* cfg, const QString& filename)
 pov_Scene::~pov_Scene()
 {
 	qDebug() << "pov_Scene::~pov_Scene()";
-	for(int i = 0; i < m_objects.size(); i++)
-	{
+	for(int i = 0; i < m_objects.size(); i++) {
 		qDebug().nospace() << "delete m_objects[" << i << "];";
 		delete m_objects[i];
 	}
@@ -45,10 +44,12 @@ QDebug operator << (QDebug d, const pov_Scene& scene)
 
 	d << "scene.m_objects.size() =" << scene.m_objects.size() << endl;
 
-	for(int i = 0; i < scene.m_objects.size(); i++)
-	{
-		d << *scene.m_objects[i];
-		d << *(pov_Sphere*)scene.m_objects[i];
+	for(int i = 0; i < scene.m_objects.size(); i++) {
+		if (scene.m_objects[i]->tag() == "SPHR") {
+			d << *(pov_Sphere*)scene.m_objects[i];
+		} else {
+			d << *scene.m_objects[i];
+		}
 	}
 	d << "\n-pov_Scene";
 	return d;
@@ -146,7 +147,7 @@ bool pov_Scene::parse()
 	delete_zero_file(m_cfg->path_to_warninglog());
 	// todo:   9. check logs for errors
 
-	// todo:  11. read dump
+	// done:  11. read dump
 	QFile dumpfile(m_cfg->path_to_dump());
 	dumpfile.open(QFile::ReadOnly);
 	QDataStream ds(&dumpfile);
@@ -183,10 +184,20 @@ bool pov_Scene::parse()
 			qDebug() << "Sphere found";
 			pov_Sphere* obj = new pov_Sphere(this);
 			obj->read(ds);
-			qDebug() << *obj;
+			//~ qDebug() << *obj;
 			m_objects.append(obj);
 			qDebug() << m_objects.size();
+
+		} else if (!strncmp(tmp, "BASE", 4)) {
+			qDebug() << "BaseObject found";
+			pov_BaseObject* obj = new pov_BaseObject(this);
+			obj->read(ds);
+			//~ qDebug() << *obj;
+			m_objects.append(obj);
+			qDebug() << m_objects.size();
+
 		} else {
+			qDebug() << "Unknown tag:" << tmp;
 		}
 	}
 	delete [] tmp;

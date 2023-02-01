@@ -5,6 +5,8 @@ Makefile.Release
 build
 *.log
 *.pov
+*.inc
+*.png
 *.orig
 SciTE.session
 SciTEDirectory.properties

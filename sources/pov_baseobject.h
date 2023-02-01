@@ -18,25 +18,12 @@ protected:
 	QVector3D m_bbox[2];
 	float m_color[5];
 
-private:
-	//~ float m_bbox[2][3];
-	//~ vec3d color;
-	//~ vec3d inner_color;
-	//~ SNGL colour[5];
-	//~ DBL min_vc;
-	//~ vec3d min_visual_color;
-	//~ DBL point_size;
-	//~ DBL point_scale;
-	//~ gl_object *globj;
-	//~ void fix_inner_color();
-	//~ bool is_blob;
-	//~ bool is_smoothed;
-
 public:
 	pov_BaseObject(pov_Scene* s);
 	virtual ~pov_BaseObject();
 	int read(QDataStream& ds);
 	friend QDebug operator << (QDebug d, const pov_BaseObject& obj);
+	QString tag() const;
 	//~ bool is_sphere;
 	//~ vec3d sphere_center;
 	//~ unsigned int tag;
@@ -55,5 +42,20 @@ public:
 	//~ std::string get_type() const;
 	//~ void get_lines(vector_line3d* lines) const;
 	//~ void get_lines(set_line3d* lines) const;
+
+private:
+	//~ float m_bbox[2][3];
+	//~ vec3d color;
+	//~ vec3d inner_color;
+	//~ SNGL colour[5];
+	//~ DBL min_vc;
+	//~ vec3d min_visual_color;
+	//~ DBL point_size;
+	//~ DBL point_scale;
+	//~ gl_object *globj;
+	//~ void fix_inner_color();
+	//~ bool is_blob;
+	//~ bool is_smoothed;
+
 };
 #endif	// POV_BASEOBJECT_H

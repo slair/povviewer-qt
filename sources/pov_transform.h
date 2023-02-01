@@ -6,17 +6,20 @@
 #define POV_TRANSFORM_H
 
 #include <QDataStream>
+#include <QDebug>
 
 class pov_Transform {
 private:
-	double *m_matrix;
+	double* m_matrix;
 public:
 	pov_Transform();
 	~pov_Transform();
+	double operator[](const int idx) const;
 	//~ void apply();
 	//~ vec3d transform_vec3d(const vec3d v);
 	//~ int read(FILE *f);
 	int read(QDataStream& ds);
+	friend QDebug operator<<(QDebug d, const pov_Transform& t);
 	//~ void remove_translation();
 	//~ void set_translation(const vec3d v);
 	//~ void clear();
