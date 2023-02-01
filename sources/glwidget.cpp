@@ -11,9 +11,12 @@
 
 bool GLWidget::m_transparent = false;
 
-GLWidget::GLWidget(QWidget *parent)
+GLWidget::GLWidget(QWidget *parent, pov_Scene* scene)
 	: QOpenGLWidget(parent)
 {
+	qDebug() << "GLWidget::GLWidget(" << parent << "," << scene << ")" << endl;
+	m_scene = scene;
+
 	m_core = QSurfaceFormat::defaultFormat().profile()
 			 == QSurfaceFormat::CoreProfile;
 
@@ -26,7 +29,9 @@ GLWidget::GLWidget(QWidget *parent)
 
 GLWidget::~GLWidget()
 {
+	qDebug() << "GLWidget::~GLWidget()" << endl;
 	cleanup();
+	delete m_scene;
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -156,8 +161,13 @@ void GLWidget::initializeGL()
 			, &GLWidget::cleanup);
 
 	initializeOpenGLFunctions();
-	// todo:  13. set bg color
-	glClearColor(0, 0, 0, m_transparent ? 0 : 1);
+
+	// done:  13. set bg color
+	//~ glClearColor(0, 0, 0, m_transparent ? 0 : 1);
+	glClearColor(m_scene->cfg()->bg_color()[0]
+				 , m_scene->cfg()->bg_color()[1]
+				 , m_scene->cfg()->bg_color()[2]
+				 , m_scene->cfg()->bg_color()[3]);
 
 	m_program = new QOpenGLShaderProgram;
 	m_program->addShaderFromSourceCode(QOpenGLShader::Vertex

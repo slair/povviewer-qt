@@ -14,11 +14,16 @@ MainWindow::MainWindow(pov_Scene* scene)
 {
 	qDebug() << "MainWindow::MainWindow(" << scene << ")" << endl;
 	m_scene = scene;
-	glWidget = new GLWidget;
+	glWidget = new GLWidget(nullptr, m_scene);
 	setCentralWidget(glWidget);
 	//~ QVBoxLayout* mainLayout = new QVBoxLayout;
 	//~ mainLayout->addWidget(glWidget);
 	//~ setLayout(mainLayout);
 	//~ setWindowTitle(tr(scene->filename()));
 	// todo:  12. set geometry
+}
+
+MainWindow::~MainWindow()
+{
+	qDebug() << "MainWindow::~MainWindow()" << endl;
 }

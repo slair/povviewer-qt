@@ -17,6 +17,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(pov_Scene* scene);
+    ~MainWindow();
 
 private:
 	pov_Scene* m_scene;

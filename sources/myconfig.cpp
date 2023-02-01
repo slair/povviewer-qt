@@ -65,9 +65,53 @@ Config::Config() : m_bChgWinPos(false), m_iWinPosX(80), m_iWinPosY(80)
 	, m_fp_statistic("statistic.log")
 	, m_fp_warning("warning.log")
 {
-	//~ m_SettingsFolder = QDir::homePath();
-	//~ qDebug() << "load_from_dir(" << m_SettingsFolder << ")";
-	load_from_dir(".", 1);
+#pragma warning(disable : 4305)
+	m_bg_color = QVector4D(0.854902, 0.788235, 0.749020, 0);
+#pragma warning(default : 4305)
+	from_bg();
+	load_from_dir(".", 1);	// load from HOME
+}
+
+void Config::from_bg()		// from QVector4D to QString
+{
+	// done:  14. m_bg_color -> m_qs_bg_color
+	m_qs_bg_color = QString("%1, %2, %3, %4").arg(m_bg_color[0])
+					.arg(m_bg_color[1]).arg(m_bg_color[2])
+					.arg(m_bg_color[3]);
+}
+
+void Config::to_bg()		// from QString to QVector4D
+{
+	// done:  15. m_qs_bg_color -> m_bg_color
+	QStringList tmp = m_qs_bg_color.split(",");
+	if (tmp.size() != 4) {
+		qWarning() << "Wrong value bg_color in INI";
+		m_bg_color = QVector4D(0, 0, 0, 0);
+	} else {
+		bool ok;
+		float a, b, c, d;
+		a = tmp[0].toFloat(&ok);
+		if (!ok) {
+			qWarning() << "Wrong value R of bg_color in INI";
+			a = 0;
+		}
+		b = tmp[1].toFloat(&ok);
+		if (!ok) {
+			qWarning() << "Wrong value G of bg_color in INI";
+			b = 0;
+		}
+		c = tmp[2].toFloat(&ok);
+		if (!ok) {
+			qWarning() << "Wrong value B of bg_color in INI";
+			c = 0;
+		}
+		d = tmp[3].toFloat(&ok);
+		if (!ok) {
+			qWarning() << "Wrong value A of bg_color in INI";
+			d = 0;
+		}
+		m_bg_color = QVector4D(a, b, c, d);
+	}
 }
 
 QDebug operator << (QDebug d, const Config& cfg)

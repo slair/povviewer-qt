@@ -8,6 +8,7 @@
 
 #include <QObject>
 #include <QMetaProperty>
+#include <QVector4D>
 #include <QTextStream>
 #include <QFile>
 #include <QDebug>
@@ -47,6 +48,9 @@ class Config : public QObject {
 	Q_PROPERTY(QString path_to_warninglog READ path_to_warninglog
 			   WRITE set_path_to_warninglog)
 
+	Q_PROPERTY(QString bg_color READ qs_bg_color
+			   WRITE set_qs_bg_color)
+
 private:
 	bool m_Changed;
 	bool m_bChgWinPos;
@@ -67,8 +71,16 @@ private:
 	QString m_fp_render;		// fullpath to render log
 	QString m_fp_statistic;		// fullpath to statistic log
 	QString m_fp_warning;		// fullpath to warning log
+	QString m_qs_bg_color;		// window background color RGBA for Config
+	QVector4D m_bg_color;		// window background color RGBA internal
 
 public:
+	void from_bg();		// from QVector4D to QString
+	void to_bg();		// from QString to QVector4D
+	QString qs_bg_color() {from_bg(); return m_qs_bg_color;}
+	void set_qs_bg_color(QString& s) {m_qs_bg_color = s; to_bg();}
+	QVector4D bg_color() const {return m_bg_color;}
+
 	QString path_to_debuglog() const {
 		return m_fp_debug;
 	}

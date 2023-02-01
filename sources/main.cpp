@@ -177,10 +177,10 @@ int main(int argc, char *argv[])
 	//~ fmt.setProfile(QSurfaceFormat::CoreProfile);
 	QSurfaceFormat::setDefaultFormat(fmt);
 
-	// todo:   6. create window
+	// done:   6. create window
 	MainWindow main_window(scene);
 
-	// todo:   7. show window
+	// done:   7. show window
 	main_window.show();
 
 	//~ delete scene;

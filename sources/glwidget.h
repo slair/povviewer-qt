@@ -11,7 +11,8 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QMatrix4x4>
-//~ #include "baseobj.h"
+
+#include "pov_scene.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
@@ -20,7 +21,8 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
     Q_OBJECT
 
 public:
-    GLWidget(QWidget *parent = nullptr);
+    //~ GLWidget(QWidget* parent = nullptr, pov_Scene* scene);
+    GLWidget(QWidget* parent, pov_Scene* scene);
     ~GLWidget();
 
     static bool isTransparent() { return m_transparent; }
@@ -49,7 +51,7 @@ protected:
 
 private:
     void setupVertexAttribs();
-
+	pov_Scene* m_scene;
     bool m_core;
     int m_xRot = 0;
     int m_yRot = 0;
