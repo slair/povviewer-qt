@@ -45,12 +45,15 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 		msg_type = "   FATAL";
 		break;
 	}
+	if (localMsg != "QOpenGLFramebufferObject: Unsupported "
+		"framebuffer format.") {
 #ifdef DEBUG_CONTEXT
-	fprintf(stderr, "%s:%u: %s\n%s: %s\n\n", file, context.line, function
-			, msg_type, localMsg.constData());
+		fprintf(stderr, "%s:%u: %s\n%s: %s\n\n", file, context.line, function
+				, msg_type, localMsg.constData());
 #else
-	fprintf(stderr, "%s: %s\n", msg_type, localMsg.constData());
+		fprintf(stderr, "%s: %s\n", msg_type, localMsg.constData());
 #endif
+	}
 }
 
 /*
@@ -118,8 +121,8 @@ int main(int argc, char *argv[])
 
 	QApplication app(argc, argv);
 
-	QCoreApplication::setApplicationName("povviewer");
-	QCoreApplication::setOrganizationName("povviewer-qt");
+	QCoreApplication::setApplicationName("povviewer-qt");
+	QCoreApplication::setOrganizationName("povviewer");
 	QCoreApplication::setApplicationVersion(POVVIEWER_VERSION_STR);
 
 	QCommandLineParser parser;

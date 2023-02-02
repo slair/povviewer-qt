@@ -17,13 +17,15 @@
 
 class Config : public QObject {
 	Q_OBJECT
-	Q_PROPERTY(bool change_window_pos MEMBER m_bChgWinPos)
-	Q_PROPERTY(int window_pos_x MEMBER m_iWinPosX)
-	Q_PROPERTY(int window_pos_y MEMBER m_iWinPosY)
+	Q_PROPERTY(bool change_window_pos READ change_window_pos
+			   WRITE set_change_window_pos)
+	Q_PROPERTY(int window_pos_x READ window_pos_x WRITE set_window_pos_x)
+	Q_PROPERTY(int window_pos_y READ window_pos_y WRITE set_window_pos_y)
 
-	Q_PROPERTY(bool change_window_size MEMBER m_bChgWinSize)
-	Q_PROPERTY(uint window_width MEMBER m_uiWinWidth)
-	Q_PROPERTY(uint window_height MEMBER m_uiWinHeight)
+	Q_PROPERTY(bool change_window_size READ change_window_size
+			   WRITE set_change_window_size)
+	Q_PROPERTY(uint window_width READ window_width WRITE set_window_width)
+	Q_PROPERTY(uint window_height READ window_height WRITE set_window_height)
 
 	Q_PROPERTY(bool save_local_cfg MEMBER m_bSaveLocalCFG)
 	Q_PROPERTY(bool load_local_cfg MEMBER m_bLoadLocalCFG)
@@ -75,41 +77,119 @@ private:
 	QVector4D m_bg_color;		// window background color RGBA internal
 
 public:
+	bool change_window_pos() const {
+		return m_bChgWinPos;
+	}
+	void set_change_window_pos(bool b) {
+		m_bChgWinPos = b;
+		m_Changed = true;
+	}
+	int window_pos_x() const {
+		return m_iWinPosX;
+	}
+	void set_window_pos_x(int i) {
+		if (m_bChgWinPos) {
+			m_iWinPosX = i;
+			m_Changed = true;
+		} else {
+			qWarning() << "Can't change window_pos_x. "
+					   "change_window_pos is false";
+		}
+	}
+	int window_pos_y() const {
+		return m_iWinPosY;
+	}
+	void set_window_pos_y(int i) {
+		if (m_bChgWinPos) {
+			m_iWinPosY = i;
+			m_Changed = true;
+		} else {
+			qWarning() << "Can't change window_pos_y. "
+					   "change_window_pos is false";
+		}
+	}
+
+	bool change_window_size() const {
+		return m_bChgWinSize;
+	}
+	void set_change_window_size(bool b) {
+		m_bChgWinSize = b;
+		m_Changed = true;
+	}
+	uint window_width() const {
+		return m_uiWinWidth;
+	}
+	void set_window_width(uint ui) {
+		if (m_bChgWinSize) {
+			m_uiWinWidth = ui;
+			m_Changed = true;
+		} else {
+			qWarning() << "Can't change window_width. "
+					   "change_window_size is false";
+		}
+	}
+	uint window_height() const {
+		return m_uiWinHeight;
+	}
+	void set_window_height(uint ui) {
+		if (m_bChgWinSize) {
+			m_uiWinHeight = ui;
+			m_Changed = true;
+		} else {
+			qWarning() << "Can't change window_height. "
+					   "change_window_size is false";
+		}
+	}
+
 	void from_bg();		// from QVector4D to QString
 	void to_bg();		// from QString to QVector4D
-	QString qs_bg_color() {from_bg(); return m_qs_bg_color;}
-	void set_qs_bg_color(QString& s) {m_qs_bg_color = s; to_bg();}
-	QVector4D bg_color() const {return m_bg_color;}
+	QString qs_bg_color() {
+		from_bg();
+		return m_qs_bg_color;
+	}
+	void set_qs_bg_color(QString& s) {
+		m_qs_bg_color = s;
+		to_bg();
+		m_Changed = true;
+	}
+	QVector4D bg_color() const {
+		return m_bg_color;
+	}
 
 	QString path_to_debuglog() const {
 		return m_fp_debug;
 	}
 	void set_path_to_debuglog(const QString& s) {
 		m_fp_debug = s;
+		m_Changed = true;
 	}
 	QString path_to_fatallog() const {
 		return m_fp_fatal;
 	}
 	void set_path_to_fatallog(const QString& s) {
 		m_fp_fatal = s;
+		m_Changed = true;
 	}
 	QString path_to_renderlog() const {
 		return m_fp_render;
 	}
 	void set_path_to_renderlog(const QString& s) {
 		m_fp_render = s;
+		m_Changed = true;
 	}
 	QString path_to_statisticlog() const {
 		return m_fp_statistic;
 	}
 	void set_path_to_statisticlog(const QString& s) {
 		m_fp_statistic = s;
+		m_Changed = true;
 	}
 	QString path_to_warninglog() const {
 		return m_fp_warning;
 	}
 	void set_path_to_warninglog(const QString& s) {
 		m_fp_warning = s;
+		m_Changed = true;
 	}
 
 	QString path_to_povdump() const {
@@ -117,6 +197,7 @@ public:
 	}
 	void set_path_to_povdump(const QString& s) {
 		m_fp_povdumpbin = s;
+		m_Changed = true;
 	}
 
 	QString path_to_dump() const {
@@ -124,6 +205,7 @@ public:
 	}
 	void set_path_to_dump(const QString& s) {
 		m_fp_dump = s;
+		m_Changed = true;
 	}
 
 	QString path_to_cfg() const {
@@ -131,6 +213,7 @@ public:
 	}
 	void set_path_to_cfg(const QString& s) {
 		m_fp_cfg = s;
+		m_Changed = true;
 	}
 
 	Config();

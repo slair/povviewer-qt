@@ -26,7 +26,8 @@ public:
 	~pov_Scene();
 	bool parse();
 	friend QDebug operator << (QDebug d, const pov_Scene& pov_Scene);
-	Config* cfg() const { return m_cfg; }
+	Config* cfg() const {return m_cfg;}
+	QString filename() const {return m_scenefilename;}
 
 private:
 	Config* m_cfg;

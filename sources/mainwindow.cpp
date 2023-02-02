@@ -6,6 +6,7 @@
 //~ #include <QMenuBar>
 //~ #include <QMenu>
 //~ #include <QMessageBox>
+#include <QApplication>
 #include <QVBoxLayout>
 
 #include "mainwindow.h"
@@ -16,14 +17,22 @@ MainWindow::MainWindow(pov_Scene* scene)
 	m_scene = scene;
 	glWidget = new GLWidget(nullptr, m_scene);
 	setCentralWidget(glWidget);
-	//~ QVBoxLayout* mainLayout = new QVBoxLayout;
-	//~ mainLayout->addWidget(glWidget);
-	//~ setLayout(mainLayout);
-	//~ setWindowTitle(tr(scene->filename()));
-	// todo:  12. set geometry
+	setWindowTitle(QCoreApplication::applicationName()
+				   + " - " + m_scene->filename());
+	// done:  12. set geometry
+	setGeometry(m_scene->cfg()->window_pos_x()
+				, m_scene->cfg()->window_pos_y()
+				, m_scene->cfg()->window_width()
+				, m_scene->cfg()->window_height());
 }
 
 MainWindow::~MainWindow()
 {
 	qDebug() << "MainWindow::~MainWindow()" << endl;
+	// done:  16. save position and size mainwindow
+	qDebug() << geometry();
+	m_scene->cfg()->set_window_pos_x(geometry().x());
+	m_scene->cfg()->set_window_pos_y(geometry().y());
+	m_scene->cfg()->set_window_width(geometry().width());
+	m_scene->cfg()->set_window_height(geometry().height());
 }

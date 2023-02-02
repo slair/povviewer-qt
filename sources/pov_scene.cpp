@@ -23,8 +23,9 @@ pov_Scene::pov_Scene(Config* cfg, const QString& filename)
 pov_Scene::~pov_Scene()
 {
 	qDebug() << "pov_Scene::~pov_Scene()";
+	qDebug() << m_objects.size() << "objects to delete";
 	for(int i = 0; i < m_objects.size(); i++) {
-		qDebug().nospace() << "delete m_objects[" << i << "];";
+		//~ qDebug().nospace() << "delete m_objects[" << i << "];";
 		delete m_objects[i];
 	}
 	m_objects.clear();

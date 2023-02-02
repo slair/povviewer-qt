@@ -230,21 +230,22 @@ void GLWidget::paintGL()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	m_world.setToIdentity();
-	m_world.rotate(180.0f - (m_xRot / 16.0f), 1, 0, 0);
-	m_world.rotate(m_yRot / 16.0f, 0, 1, 0);
-	m_world.rotate(m_zRot / 16.0f, 0, 0, 1);
+	// todo:  17. draw scene
+	//~ m_world.setToIdentity();
+	//~ m_world.rotate(180.0f - (m_xRot / 16.0f), 1, 0, 0);
+	//~ m_world.rotate(m_yRot / 16.0f, 0, 1, 0);
+	//~ m_world.rotate(m_zRot / 16.0f, 0, 0, 1);
 
-	QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
-	m_program->bind();
-	m_program->setUniformValue(m_projMatrixLoc, m_proj);
-	m_program->setUniformValue(m_mvMatrixLoc, m_camera * m_world);
-	QMatrix3x3 normalMatrix = m_world.normalMatrix();
-	m_program->setUniformValue(m_normalMatrixLoc, normalMatrix);
+	//~ QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
+	//~ m_program->bind();
+	//~ m_program->setUniformValue(m_projMatrixLoc, m_proj);
+	//~ m_program->setUniformValue(m_mvMatrixLoc, m_camera * m_world);
+	//~ QMatrix3x3 normalMatrix = m_world.normalMatrix();
+	//~ m_program->setUniformValue(m_normalMatrixLoc, normalMatrix);
 
-	//~ glDrawArrays(GL_TRIANGLES, 0, m_logo.vertexCount());
+	//~ // glDrawArrays(GL_TRIANGLES, 0, m_logo.vertexCount());
 
-	m_program->release();
+	//~ m_program->release();
 }
 
 void GLWidget::resizeGL(int w, int h)
