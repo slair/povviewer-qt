@@ -53,6 +53,10 @@ class Config : public QObject {
 	Q_PROPERTY(QString bg_color READ qs_bg_color
 			   WRITE set_qs_bg_color)
 
+	Q_PROPERTY(bool show_axis READ show_axis WRITE set_show_axis)
+	Q_PROPERTY(bool is_perspective READ is_perspective WRITE set_perspective)
+	Q_PROPERTY(float axis_size READ axis_size WRITE set_axis_size)
+
 private:
 	bool m_Changed;
 	bool m_bChgWinPos;
@@ -75,8 +79,27 @@ private:
 	QString m_fp_warning;		// fullpath to warning log
 	QString m_qs_bg_color;		// window background color RGBA for Config
 	QVector4D m_bg_color;		// window background color RGBA internal
+	bool m_bShowAxis;			// show axis X, Y, Z
+	float m_fAxisSize;			// axis size
+	bool m_bIsPerspective;		// perspective camera, else orthographic
 
 public:
+	float axis_size() const {
+		return m_fAxisSize;
+	}
+	void set_axis_size(float f) {
+		m_fAxisSize = f;
+		m_Changed = true;
+	}
+
+	bool is_perspective() const {
+		return m_bIsPerspective;
+	}
+	void set_perspective(bool b) {
+		m_bIsPerspective = b;
+		m_Changed = true;
+	}
+
 	bool change_window_pos() const {
 		return m_bChgWinPos;
 	}
@@ -213,6 +236,14 @@ public:
 	}
 	void set_path_to_cfg(const QString& s) {
 		m_fp_cfg = s;
+		m_Changed = true;
+	}
+
+	bool show_axis() const {
+		return m_bShowAxis;
+	}
+	void set_show_axis(bool b) {
+		m_bShowAxis = b;
 		m_Changed = true;
 	}
 

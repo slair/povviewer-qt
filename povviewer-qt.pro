@@ -30,7 +30,7 @@ SOURCES       =	sources/myconfig.cpp \
 				sources/pov_baseobject.cpp \
 				sources/pov_sphere.cpp
 
-QT           += widgets
+QT           += widgets opengl
 
 CONFIG(debug, debug|release) {
     DESTDIR = build/debug

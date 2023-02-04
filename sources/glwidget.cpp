@@ -9,27 +9,64 @@
 #include <QCoreApplication>
 #include <math.h>
 
-bool GLWidget::m_transparent = false;
+const char* const vertexShaderSource =
+	"attribute vec4 vertex;\n"
+	//~ "attribute vec3 normal;\n"
+	//~ "varying vec3 vert;\n"
+	//~ "varying vec3 vertNormal;\n"
+	//~ "uniform mat4 projMatrix;\n"
+	//~ "uniform mat4 mvMatrix;\n"
+	//~ "uniform mat3 normalMatrix;\n"
+	"void main() {\n"
+	//~ "   vert = vertex.xyz;\n"
+	//~ "   vertNormal = normalMatrix * normal;\n"
+	//~ "   gl_Position = projMatrix * mvMatrix * vertex;\n"
+	"   gl_Position = vertex;\n"
+	"}\n";
+
+const char *const fragmentShaderSource =
+//~ "#version 330 core\n"
+	//~ "out vec4 color;\n"
+	//~ "void main()\n"
+	//~ "{\n"
+	//~ "    color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+	//~ "}";
+	//~ "varying highp vec3 vert;\n"
+	//~ "varying highp vec3 vertNormal;\n"
+	//~ "uniform highp vec3 lightPos;\n"
+	"void main() {\n"
+	//~ "   highp vec3 L = normalize(lightPos - vert);\n"
+	//~ "   highp float NL = max(dot(normalize(vertNormal), L), 0.0);\n"
+	//~ "   highp vec3 color = vec3(0.39, 1.0, 0.0);\n"
+	//~ "   highp vec3 col = clamp(color * 0.2 + color * 0.8 * NL, 0.0, 1.0);\n"
+	"   gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+	"}\n";
 
 GLWidget::GLWidget(QWidget *parent, pov_Scene* scene)
 	: QOpenGLWidget(parent)
 {
-	qDebug() << "GLWidget::GLWidget(" << parent << "," << scene << ")" << endl;
+	qDebug() << "GLWidget::GLWidget(" << parent << "," << scene << ")";
 	m_scene = scene;
+	QSurfaceFormat fmt = format();
+	fmt.setAlphaBufferSize(8);
+	setFormat(fmt);
 
-	m_core = QSurfaceFormat::defaultFormat().profile()
-			 == QSurfaceFormat::CoreProfile;
+	//~ m_core = QSurfaceFormat::defaultFormat().profile()
+	//~ == QSurfaceFormat::CoreProfile;
 
-	if (m_transparent) {
-		QSurfaceFormat fmt = format();
-		fmt.setAlphaBufferSize(8);
-		setFormat(fmt);
-	}
+	//~ if (m_transparent) {
+	//~ QSurfaceFormat fmt = format();
+	//~ fmt.setAlphaBufferSize(8);
+	//~ setFormat(fmt);
+	//~ }
+
+	//~ qDebug() << "m_core:" << m_core;
+	//~ qDebug() << "m_transparent:" << m_transparent;
 }
 
 GLWidget::~GLWidget()
 {
-	qDebug() << "GLWidget::~GLWidget()" << endl;
+	qDebug() << "GLWidget::~GLWidget()";
 	cleanup();
 	delete m_scene;
 }
@@ -44,7 +81,131 @@ QSize GLWidget::sizeHint() const
 	return QSize(512, 384);
 }
 
-static void qNormalizeAngle(int &angle)
+void GLWidget::cleanup()
+{
+	if (m_program == nullptr)
+		return;
+	//~ makeCurrent();
+	//~ m_logoVbo.destroy();
+	delete m_program;
+	m_program = nullptr;
+	doneCurrent();
+}
+
+void GLWidget::initializeGL()
+{
+	if (!context()) {
+		qCritical() << "Can't get OpenGL context";
+		close();
+		return;
+	}
+
+	qDebug() << context();
+	if (context()->isValid()) {
+		qDebug() << "Valid";
+	} else {
+		qDebug() << "Invalid";
+	}
+	if (context()->isOpenGLES()) {
+		qDebug() << "OpenGLES";
+	} else {
+		qDebug() << "OpenGL";
+	}
+
+	m_funcs = context()->versionFunctions<QOpenGLFunctions_2_0>();
+	if (!m_funcs) {
+		qCritical() << "Can't get OpenGL 2.0";
+		close();
+		return;
+	}
+	m_funcs->initializeOpenGLFunctions();
+	qDebug() << "GL_VERSION:" << *m_funcs->glGetString(GL_VERSION);
+
+	m_funcs->glClearColor(m_scene->cfg()->bg_color()[0]
+						  , m_scene->cfg()->bg_color()[1]
+						  , m_scene->cfg()->bg_color()[2]
+						  , m_scene->cfg()->bg_color()[3]);
+	m_funcs->glShadeModel(GL_SMOOTH);
+	m_funcs->glCullFace(GL_BACK);
+	m_funcs->glFrontFace(GL_CCW);
+	m_funcs->glEnable(GL_CULL_FACE);
+	m_funcs->glEnable(GL_MAP2_VERTEX_3);
+	m_funcs->glEnable(GL_RESCALE_NORMAL);
+	m_funcs->glEnable(GL_NORMALIZE);
+	m_funcs->glEnable(GL_AUTO_NORMAL);
+	m_funcs->glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	m_funcs->glEnable(GL_DEPTH_TEST);
+	m_funcs->glDepthFunc(GL_LEQUAL);
+
+	initializeGeometry();
+	initializeShaders();
+
+	connect(context(), &QOpenGLContext::aboutToBeDestroyed, this
+			, &GLWidget::cleanup);
+}
+
+void GLWidget::initializeGeometry()
+{
+	// setup vertex data
+	GLfloat vertices[] = {
+		// Positions
+		0.5f, -0.5f, 0.0f,  // Bottom right corner
+		0.0f,  0.5f, 0.0f,  // Top corner
+		-0.5f, -0.5f, 0.0f, // Bottom left corner
+	};
+
+	m_vao.create();
+	QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
+
+	m_vbo.create();
+	m_vbo.bind();
+	m_vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
+	m_vbo.allocate(vertices, sizeof(vertices));
+
+	m_funcs->glEnableVertexAttribArray(0);
+	m_funcs->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE
+								   , 3 * sizeof(GLfloat), nullptr);
+}
+
+void GLWidget::initializeShaders()
+{
+	//~ m_program = std::make_unique<QOpenGLShaderProgram>();
+	m_program = new QOpenGLShaderProgram();
+	m_program->addShaderFromSourceCode(QOpenGLShader::Vertex
+									   , vertexShaderSource);
+	m_program->addShaderFromSourceCode(QOpenGLShader::Fragment
+									   , fragmentShaderSource);
+	m_program->link();
+}
+
+void GLWidget::paintGL()
+{
+	// todo:  17. draw scene
+	//~ m_scene->begin_frame();
+	//~ m_scene->setup_camera();
+	//~ m_scene->drawGL();
+	//~ m_scene->end_frame();
+	if (!m_funcs)
+		return;
+
+	m_funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	m_program->bind();
+	m_funcs->glDisable(GL_LIGHTING);
+	QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
+	m_funcs->glDrawArrays(GL_TRIANGLES, 0, 3);
+	m_program->release();
+}
+
+void GLWidget::resizeGL(int w, int h)
+{
+	if (!m_funcs)
+		return;
+
+	m_funcs->glViewport(0, 0, w, h);
+}
+
+/*static void qNormalizeAngle(int &angle)
 {
 	while (angle < 0)
 		angle += 360 * 16;
@@ -82,178 +243,6 @@ void GLWidget::setZRotation(int angle)
 	}
 }
 
-void GLWidget::cleanup()
-{
-	if (m_program == nullptr)
-		return;
-	makeCurrent();
-	m_logoVbo.destroy();
-	delete m_program;
-	m_program = nullptr;
-	doneCurrent();
-}
-
-static const char *vertexShaderSourceCore =
-	"#version 150\n"
-	"in vec4 vertex;\n"
-	"in vec3 normal;\n"
-	"out vec3 vert;\n"
-	"out vec3 vertNormal;\n"
-	"uniform mat4 projMatrix;\n"
-	"uniform mat4 mvMatrix;\n"
-	"uniform mat3 normalMatrix;\n"
-	"void main() {\n"
-	"   vert = vertex.xyz;\n"
-	"   vertNormal = normalMatrix * normal;\n"
-	"   gl_Position = projMatrix * mvMatrix * vertex;\n"
-	"}\n";
-
-static const char *fragmentShaderSourceCore =
-	"#version 150\n"
-	"in highp vec3 vert;\n"
-	"in highp vec3 vertNormal;\n"
-	"out highp vec4 fragColor;\n"
-	"uniform highp vec3 lightPos;\n"
-	"void main() {\n"
-	"   highp vec3 L = normalize(lightPos - vert);\n"
-	"   highp float NL = max(dot(normalize(vertNormal), L), 0.0);\n"
-	"   highp vec3 color = vec3(0.39, 1.0, 0.0);\n"
-	"   highp vec3 col = clamp(color * 0.2 + color * 0.8 * NL, 0.0, 1.0);\n"
-	"   fragColor = vec4(col, 1.0);\n"
-	"}\n";
-
-static const char *vertexShaderSource =
-	"attribute vec4 vertex;\n"
-	"attribute vec3 normal;\n"
-	"varying vec3 vert;\n"
-	"varying vec3 vertNormal;\n"
-	"uniform mat4 projMatrix;\n"
-	"uniform mat4 mvMatrix;\n"
-	"uniform mat3 normalMatrix;\n"
-	"void main() {\n"
-	"   vert = vertex.xyz;\n"
-	"   vertNormal = normalMatrix * normal;\n"
-	"   gl_Position = projMatrix * mvMatrix * vertex;\n"
-	"}\n";
-
-static const char *fragmentShaderSource =
-	"varying highp vec3 vert;\n"
-	"varying highp vec3 vertNormal;\n"
-	"uniform highp vec3 lightPos;\n"
-	"void main() {\n"
-	"   highp vec3 L = normalize(lightPos - vert);\n"
-	"   highp float NL = max(dot(normalize(vertNormal), L), 0.0);\n"
-	"   highp vec3 color = vec3(0.39, 1.0, 0.0);\n"
-	"   highp vec3 col = clamp(color * 0.2 + color * 0.8 * NL, 0.0, 1.0);\n"
-	"   gl_FragColor = vec4(col, 1.0);\n"
-	"}\n";
-
-void GLWidget::initializeGL()
-{
-	// In this example the widget's corresponding top-level window can change
-	// several times during the widget's lifetime. Whenever this happens, the
-	// QOpenGLWidget's associated context is destroyed and a new one is created.
-	// Therefore we have to be prepared to clean up the resources on the
-	// aboutToBeDestroyed() signal, instead of the destructor. The emission of
-	// the signal will be followed by an invocation of initializeGL() where we
-	// can recreate all resources.
-	connect(context(), &QOpenGLContext::aboutToBeDestroyed, this
-			, &GLWidget::cleanup);
-
-	initializeOpenGLFunctions();
-
-	// done:  13. set bg color
-	//~ glClearColor(0, 0, 0, m_transparent ? 0 : 1);
-	glClearColor(m_scene->cfg()->bg_color()[0]
-				 , m_scene->cfg()->bg_color()[1]
-				 , m_scene->cfg()->bg_color()[2]
-				 , m_scene->cfg()->bg_color()[3]);
-
-	m_program = new QOpenGLShaderProgram;
-	m_program->addShaderFromSourceCode(QOpenGLShader::Vertex
-									   , m_core ? vertexShaderSourceCore
-									   : vertexShaderSource);
-	m_program->addShaderFromSourceCode(QOpenGLShader::Fragment
-									   , m_core ? fragmentShaderSourceCore
-									   : fragmentShaderSource);
-	m_program->bindAttributeLocation("vertex", 0);
-	m_program->bindAttributeLocation("normal", 1);
-	m_program->link();
-
-	m_program->bind();
-	m_projMatrixLoc = m_program->uniformLocation("projMatrix");
-	m_mvMatrixLoc = m_program->uniformLocation("mvMatrix");
-	m_normalMatrixLoc = m_program->uniformLocation("normalMatrix");
-	m_lightPosLoc = m_program->uniformLocation("lightPos");
-
-	// Create a vertex array object. In OpenGL ES 2.0 and OpenGL 2.x
-	// implementations this is optional and support may not be present
-	// at all. Nonetheless the below code works in all cases and makes
-	// sure there is a VAO when one is needed.
-	m_vao.create();
-	QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
-
-	// Setup our vertex buffer object.
-	m_logoVbo.create();
-	m_logoVbo.bind();
-	//~ m_logoVbo.allocate(m_logo.constData(), m_logo.count() * sizeof(GLfloat));
-
-	// Store the vertex attribute bindings for the program.
-	setupVertexAttribs();
-
-	// Our camera never changes in this example.
-	m_camera.setToIdentity();
-	m_camera.translate(0, 0, -1);
-
-	// Light position is fixed.
-	m_program->setUniformValue(m_lightPosLoc, QVector3D(0, 0, 70));
-
-	m_program->release();
-}
-
-void GLWidget::setupVertexAttribs()
-{
-	m_logoVbo.bind();
-	QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-	f->glEnableVertexAttribArray(0);
-	f->glEnableVertexAttribArray(1);
-	f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
-							 nullptr);
-	f->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
-							 reinterpret_cast<void *>(3 * sizeof(GLfloat)));
-	m_logoVbo.release();
-}
-
-void GLWidget::paintGL()
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-
-	// todo:  17. draw scene
-	//~ m_world.setToIdentity();
-	//~ m_world.rotate(180.0f - (m_xRot / 16.0f), 1, 0, 0);
-	//~ m_world.rotate(m_yRot / 16.0f, 0, 1, 0);
-	//~ m_world.rotate(m_zRot / 16.0f, 0, 0, 1);
-
-	//~ QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
-	//~ m_program->bind();
-	//~ m_program->setUniformValue(m_projMatrixLoc, m_proj);
-	//~ m_program->setUniformValue(m_mvMatrixLoc, m_camera * m_world);
-	//~ QMatrix3x3 normalMatrix = m_world.normalMatrix();
-	//~ m_program->setUniformValue(m_normalMatrixLoc, normalMatrix);
-
-	//~ // glDrawArrays(GL_TRIANGLES, 0, m_logo.vertexCount());
-
-	//~ m_program->release();
-}
-
-void GLWidget::resizeGL(int w, int h)
-{
-	m_proj.setToIdentity();
-	m_proj.perspective(45.0f, GLfloat(w) / h, 0.01f, 100.0f);
-}
-
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
 	m_lastPos = event->pos();
@@ -272,4 +261,4 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 		setZRotation(m_zRot + 8 * dx);
 	}
 	m_lastPos = event->pos();
-}
+}*/

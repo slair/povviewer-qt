@@ -7,9 +7,10 @@
 #define POV_SCENE_H
 
 #include <QObject>
-#include <qopengl.h>
+//~ #include <qopengl.h>
 #include <QVector>
 #include <QVector3D>
+#include <QOpenGLFunctions>
 
 #include "myconfig.h"
 
@@ -17,7 +18,7 @@
 
 class pov_BaseObject;
 
-class pov_Scene : public QObject {
+class pov_Scene : public QObject, protected QOpenGLFunctions {
 	Q_OBJECT
 	Q_PROPERTY(double clock MEMBER m_clockvalue)
 
@@ -28,6 +29,13 @@ public:
 	friend QDebug operator << (QDebug d, const pov_Scene& pov_Scene);
 	Config* cfg() const {return m_cfg;}
 	QString filename() const {return m_scenefilename;}
+	void begin_frame();
+	void end_frame();
+	void setup_camera();
+	void initGL();
+	void drawGL();
+	void setup_perspective(float cam_ratio);
+	void setup_ortho();
 
 private:
 	Config* m_cfg;

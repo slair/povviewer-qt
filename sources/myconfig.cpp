@@ -69,6 +69,11 @@ Config::Config() : m_bChgWinPos(true), m_iWinPosX(80), m_iWinPosY(80)
 	m_bg_color = QVector4D(0.854902, 0.788235, 0.749020, 0);
 #pragma warning(default : 4305)
 	from_bg();
+
+	m_bShowAxis = true;				// show axis X, Y, Z
+	m_fAxisSize = 100.0;			// axis size
+	m_bIsPerspective = true;		// perspective camera, else orthographic
+
 	load_from_dir(".", 1);	// load from HOME
 }
 

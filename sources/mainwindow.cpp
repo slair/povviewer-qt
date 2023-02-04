@@ -13,7 +13,7 @@
 
 MainWindow::MainWindow(pov_Scene* scene)
 {
-	qDebug() << "MainWindow::MainWindow(" << scene << ")" << endl;
+	qDebug() << "MainWindow::MainWindow(" << scene << ")";
 	m_scene = scene;
 	glWidget = new GLWidget(nullptr, m_scene);
 	setCentralWidget(glWidget);
@@ -28,7 +28,7 @@ MainWindow::MainWindow(pov_Scene* scene)
 
 MainWindow::~MainWindow()
 {
-	qDebug() << "MainWindow::~MainWindow()" << endl;
+	qDebug() << "MainWindow::~MainWindow()";
 	// done:  16. save position and size mainwindow
 	qDebug() << geometry();
 	m_scene->cfg()->set_window_pos_x(geometry().x());
