@@ -10,36 +10,22 @@
 #include <math.h>
 
 const char* const vertexShaderSource =
-	"attribute vec4 vertex;\n"
-	//~ "attribute vec3 normal;\n"
-	//~ "varying vec3 vert;\n"
-	//~ "varying vec3 vertNormal;\n"
-	//~ "uniform mat4 projMatrix;\n"
-	//~ "uniform mat4 mvMatrix;\n"
-	//~ "uniform mat3 normalMatrix;\n"
+	"attribute vec4 a_color;\n"
+	"attribute vec3 a_vertex;\n"
+	"varying vec4 v_color;\n"
+	"varying vec3 v_vertex;\n"
 	"void main() {\n"
-	//~ "   vert = vertex.xyz;\n"
-	//~ "   vertNormal = normalMatrix * normal;\n"
-	//~ "   gl_Position = projMatrix * mvMatrix * vertex;\n"
-	"   gl_Position = vertex;\n"
+	"   v_color = a_color;\n"
+	"   v_vertex = a_vertex;\n"
+	"   gl_Position = vec4(a_vertex, 1.0);\n"
 	"}\n";
 
 const char *const fragmentShaderSource =
-//~ "#version 330 core\n"
-	//~ "out vec4 color;\n"
-	//~ "void main()\n"
-	//~ "{\n"
-	//~ "    color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-	//~ "}";
-	//~ "varying highp vec3 vert;\n"
-	//~ "varying highp vec3 vertNormal;\n"
-	//~ "uniform highp vec3 lightPos;\n"
+	//~ "precision mediump float;\n"
+	"varying vec4 v_color;\n"
+	"varying vec3 v_vertex;\n"
 	"void main() {\n"
-	//~ "   highp vec3 L = normalize(lightPos - vert);\n"
-	//~ "   highp float NL = max(dot(normalize(vertNormal), L), 0.0);\n"
-	//~ "   highp vec3 color = vec3(0.39, 1.0, 0.0);\n"
-	//~ "   highp vec3 col = clamp(color * 0.2 + color * 0.8 * NL, 0.0, 1.0);\n"
-	"   gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+	"   gl_FragColor = v_color;\n"
 	"}\n";
 
 GLWidget::GLWidget(QWidget *parent, pov_Scene* scene)
@@ -50,18 +36,6 @@ GLWidget::GLWidget(QWidget *parent, pov_Scene* scene)
 	QSurfaceFormat fmt = format();
 	fmt.setAlphaBufferSize(8);
 	setFormat(fmt);
-
-	//~ m_core = QSurfaceFormat::defaultFormat().profile()
-	//~ == QSurfaceFormat::CoreProfile;
-
-	//~ if (m_transparent) {
-	//~ QSurfaceFormat fmt = format();
-	//~ fmt.setAlphaBufferSize(8);
-	//~ setFormat(fmt);
-	//~ }
-
-	//~ qDebug() << "m_core:" << m_core;
-	//~ qDebug() << "m_transparent:" << m_transparent;
 }
 
 GLWidget::~GLWidget()
@@ -85,7 +59,7 @@ void GLWidget::cleanup()
 {
 	if (m_program == nullptr)
 		return;
-	//~ makeCurrent();
+	makeCurrent();
 	//~ m_logoVbo.destroy();
 	delete m_program;
 	m_program = nullptr;
@@ -142,6 +116,9 @@ void GLWidget::initializeGL()
 
 	connect(context(), &QOpenGLContext::aboutToBeDestroyed, this
 			, &GLWidget::cleanup);
+
+	m_program->bind();
+	m_program->release();
 }
 
 void GLWidget::initializeGeometry()
@@ -149,8 +126,11 @@ void GLWidget::initializeGeometry()
 	// setup vertex data
 	GLfloat vertices[] = {
 		// Positions
+		0.0f, 1.0f, 0.0f, 0.0f,  // Bottom right corner
 		0.5f, -0.5f, 0.0f,  // Bottom right corner
+		1.0f,  0.0f, 0.0f, 0.0f,  // Top corner
 		0.0f,  0.5f, 0.0f,  // Top corner
+		0.0f, 0.0f, 1.0f, 0.0f, // Bottom left corner
 		-0.5f, -0.5f, 0.0f, // Bottom left corner
 	};
 
@@ -163,8 +143,15 @@ void GLWidget::initializeGeometry()
 	m_vbo.allocate(vertices, sizeof(vertices));
 
 	m_funcs->glEnableVertexAttribArray(0);
-	m_funcs->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE
-								   , 3 * sizeof(GLfloat), nullptr);
+	m_funcs->glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE
+								   , 7 * sizeof(GLfloat), nullptr);
+
+	m_funcs->glEnableVertexAttribArray(1);
+	m_funcs->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE
+								   , 7 * sizeof(GLfloat)
+								   , reinterpret_cast<void *>
+								   (4 * sizeof(GLfloat)));
+	m_vbo.release();
 }
 
 void GLWidget::initializeShaders()
@@ -175,6 +162,8 @@ void GLWidget::initializeShaders()
 									   , vertexShaderSource);
 	m_program->addShaderFromSourceCode(QOpenGLShader::Fragment
 									   , fragmentShaderSource);
+	m_program->bindAttributeLocation("a_color", 0);
+	m_program->bindAttributeLocation("a_vertex", 1);
 	m_program->link();
 }
 
