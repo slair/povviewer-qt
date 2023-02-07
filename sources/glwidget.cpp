@@ -9,7 +9,7 @@
 #include <QCoreApplication>
 #include <math.h>
 
-const char* const vertexShaderSource =
+const char* const VS_color_vertex =
 	"attribute vec4 a_color;\n"
 	"attribute vec3 a_vertex;\n"
 	"varying vec4 v_color;\n"
@@ -20,7 +20,7 @@ const char* const vertexShaderSource =
 	"   gl_Position = vec4(a_vertex, 1.0);\n"
 	"}\n";
 
-const char *const fragmentShaderSource =
+const char *const FS_color_vertex =
 	//~ "precision mediump float;\n"
 	"varying vec4 v_color;\n"
 	"varying vec3 v_vertex;\n"
@@ -35,6 +35,7 @@ GLWidget::GLWidget(QWidget *parent, pov_Scene* scene)
 	m_scene = scene;
 	QSurfaceFormat fmt = format();
 	fmt.setAlphaBufferSize(8);
+	qDebug() << "fmt.alphaBufferSize() =" << fmt.alphaBufferSize();
 	setFormat(fmt);
 }
 
@@ -57,12 +58,12 @@ QSize GLWidget::sizeHint() const
 
 void GLWidget::cleanup()
 {
-	if (m_program == nullptr)
+	if (m_prg_color_vertex == nullptr)
 		return;
 	makeCurrent();
 	//~ m_logoVbo.destroy();
-	delete m_program;
-	m_program = nullptr;
+	delete m_prg_color_vertex;
+	m_prg_color_vertex = nullptr;
 	doneCurrent();
 }
 
@@ -73,6 +74,8 @@ void GLWidget::initializeGL()
 		close();
 		return;
 	}
+
+	makeCurrent();
 
 	qDebug() << context();
 	if (context()->isValid()) {
@@ -111,79 +114,210 @@ void GLWidget::initializeGL()
 	m_funcs->glEnable(GL_DEPTH_TEST);
 	m_funcs->glDepthFunc(GL_LEQUAL);
 
-	initializeGeometry();
 	initializeShaders();
+	initializeAxis();
+	initializeTriangle();
 
 	connect(context(), &QOpenGLContext::aboutToBeDestroyed, this
 			, &GLWidget::cleanup);
 
-	m_program->bind();
-	m_program->release();
+	//~ m_prg_color_vertex->bind();
+	//~ m_prg_color_vertex->release();
 }
 
-void GLWidget::initializeGeometry()
+/*int add_color_vertex(GLfloat* p, QVector4D c, QVector3D v)
+{
+	*p++ = c[0];
+	*p++ = c[1];
+	*p++ = c[2];
+	*p++ = c[3];
+
+	*p++ = v[0];
+	*p++ = v[1];
+	*p++ = v[2];
+
+	return 7;
+}*/
+
+template <class _T>
+GLuint add_item(QVector<_T>& v, const _T i)
+{
+	// if i in v return index or add i to v and return index
+	GLuint res;
+	if (!v.contains(i)) {
+		res = v.count();
+		v << i;
+	} else {
+		res = v.indexOf(i);
+	}
+	return res;
+}
+
+#define COLOR_BRIGHT_RED QVector4D(1, 0, 0, 0)
+#define COLOR_RED QVector4D(0.5, 0, 0, 0)
+#define COLOR_BRIGHT_GREEN QVector4D(0, 1, 0, 0)
+#define COLOR_GREEN QVector4D(0, 0.5, 0, 0)
+#define COLOR_BRIGHT_BLUE QVector4D(0, 0, 1, 0)
+#define COLOR_BLUE QVector4D(0, 0, 0.5, 0)
+
+void GLWidget::initializeAxis()
+{
+	QVector<PosCol> points;
+	QVector<GLuint> indices;
+
+	float _as = m_scene->cfg()->axis_size() / 2.0;
+
+	// X axis
+	indices << add_item(points, PosCol(QVector3D(0, 0, 0), COLOR_BRIGHT_RED));
+	indices << add_item(points, {QVector3D(_as, 0, 0), COLOR_BRIGHT_RED});
+	indices << add_item(points, {QVector3D(0, 0, 0), COLOR_RED});
+	indices << add_item(points, {QVector3D(-_as, 0, 0), COLOR_RED});
+	// Y axis
+	indices << add_item(points, {QVector3D(0, 0, 0), COLOR_BRIGHT_GREEN});
+	indices << add_item(points, {QVector3D(0, _as, 0), COLOR_BRIGHT_GREEN});
+	indices << add_item(points, {QVector3D(0, 0, 0), COLOR_GREEN});
+	indices << add_item(points, {QVector3D(0, -_as, 0), COLOR_GREEN});
+	// Z axis
+	indices << add_item(points, {QVector3D(0, 0, 0), COLOR_BRIGHT_BLUE});
+	indices << add_item(points, {QVector3D(0, 0, _as), COLOR_BRIGHT_BLUE});
+	indices << add_item(points, {QVector3D(0, 0, 0), COLOR_BLUE});
+	indices << add_item(points, {QVector3D(0, 0, -_as), COLOR_BLUE});
+
+	qDebug() << "points.size() =" << points.size() << "PosCol";
+	qDebug() << "points.size() =" << points.size() * sizeof(PosCol)
+			 << "bytes";
+	qDebug() << "points:";
+	for(int i = 0; i < points.size(); i++) qDebug() << i << points[i];
+	qDebug() << "indices.size() =" << indices.size() << "GLuint";
+	qDebug() << "iindices.size() =" << indices.size() * sizeof(GLuint)
+			 << "bytes";
+	qDebug() << "indices:";
+	for(int i = 0; i < indices.size(); i++) qDebug() << i << indices[i];
+
+	m_vao_axis.create();
+	m_vao_axis.bind();
+
+	m_axis_points.create();
+	m_axis_points.bind();
+	m_axis_points.setUsagePattern(QOpenGLBuffer::StaticDraw);
+	m_axis_points.allocate(points.constData()
+						   , points.size() * sizeof(PosCol));
+
+	m_axis_indices.create();
+	m_axis_indices.bind();
+	m_axis_indices.setUsagePattern(QOpenGLBuffer::StaticDraw);
+	m_axis_indices.allocate(indices.constData()
+							, indices.size() * sizeof(GLuint));
+}
+
+void GLWidget::initializeTriangle()
 {
 	// setup vertex data
-	GLfloat vertices[] = {
+	GLfloat vertices3[] = {
 		// Positions
-		0.0f, 1.0f, 0.0f, 0.0f,  // Bottom right corner
-		0.5f, -0.5f, 0.0f,  // Bottom right corner
-		1.0f,  0.0f, 0.0f, 0.0f,  // Top corner
-		0.0f,  0.5f, 0.0f,  // Top corner
-		0.0f, 0.0f, 1.0f, 0.0f, // Bottom left corner
-		-0.5f, -0.5f, 0.0f, // Bottom left corner
+		0.0f, 1.0f, 0.0f, 0.0f,		// color Bottom right corner
+		0.5f, -0.5f, 0.0f,			// Bottom right corner
+		1.0f,  0.0f, 0.0f, 0.0f,	// color Top corner
+		0.0f,  0.5f, 0.0f,			// Top corner
+		0.0f, 0.0f, 1.0f, 0.0f,		// Bottom left corner
+		-0.5f, -0.5f, 0.0f,			// color Bottom left corner
 	};
+	QVector<PosCol> points;
+	QVector<GLuint> indices;
 
-	m_vao.create();
-	QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
+	float _ts = 0.5;
 
-	m_vbo.create();
-	m_vbo.bind();
-	m_vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
-	m_vbo.allocate(vertices, sizeof(vertices));
+	indices << add_item(points, {QVector3D(_ts, -_ts, 0), COLOR_BRIGHT_GREEN});
+	indices << add_item(points, {QVector3D(0, _ts, 0), COLOR_BRIGHT_RED});
+	indices << add_item(points, {QVector3D(-_ts, -_ts, 0), COLOR_BRIGHT_BLUE});
 
-	m_funcs->glEnableVertexAttribArray(0);
-	m_funcs->glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE
-								   , 7 * sizeof(GLfloat), nullptr);
+	qDebug() << "points.size() =" << points.size() << "PosCol";
+	qDebug() << "points.size() =" << points.size() * sizeof(PosCol)
+			 << "bytes";
+	qDebug() << "points:";
+	for(int i = 0; i < points.size(); i++) qDebug() << i << points[i];
+	qDebug() << "indices.size() =" << indices.size() << "GLuint";
+	qDebug() << "iindices.size() =" << indices.size() * sizeof(GLuint)
+			 << "bytes";
+	qDebug() << "indices:";
+	for(int i = 0; i < indices.size(); i++) qDebug() << i << indices[i];
 
-	m_funcs->glEnableVertexAttribArray(1);
-	m_funcs->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE
-								   , 7 * sizeof(GLfloat)
-								   , reinterpret_cast<void *>
-								   (4 * sizeof(GLfloat)));
-	m_vbo.release();
+	m_vao_triangle.create();
+	m_vao_triangle.bind();
+
+	m_triangle_points.create();
+	m_triangle_points.bind();
+	m_triangle_points.setUsagePattern(QOpenGLBuffer::StaticDraw);
+	m_triangle_points.allocate(points.constData()
+						   , points.size() * sizeof(PosCol));
+
+	m_triangle_indices.create();
+	m_triangle_indices.bind();
+	m_triangle_indices.setUsagePattern(QOpenGLBuffer::StaticDraw);
+	m_triangle_indices.allocate(indices.constData()
+							, indices.size() * sizeof(GLuint));
 }
 
 void GLWidget::initializeShaders()
 {
-	//~ m_program = std::make_unique<QOpenGLShaderProgram>();
-	m_program = new QOpenGLShaderProgram();
-	m_program->addShaderFromSourceCode(QOpenGLShader::Vertex
-									   , vertexShaderSource);
-	m_program->addShaderFromSourceCode(QOpenGLShader::Fragment
-									   , fragmentShaderSource);
-	m_program->bindAttributeLocation("a_color", 0);
-	m_program->bindAttributeLocation("a_vertex", 1);
-	m_program->link();
+	//~ m_prg_color_vertex = std::make_unique<QOpenGLShaderProgram>();
+	m_prg_color_vertex = new QOpenGLShaderProgram();
+	m_prg_color_vertex->addShaderFromSourceCode(QOpenGLShader::Vertex
+			, VS_color_vertex);
+	m_prg_color_vertex->addShaderFromSourceCode(QOpenGLShader::Fragment
+			, FS_color_vertex);
+	m_prg_color_vertex->link();
 }
 
 void GLWidget::paintGL()
 {
-	// todo:  17. draw scene
-	//~ m_scene->begin_frame();
-	//~ m_scene->setup_camera();
-	//~ m_scene->drawGL();
-	//~ m_scene->end_frame();
+	qDebug() << "GLWidget::paintGL()";
+
 	if (!m_funcs)
 		return;
 
 	m_funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	m_program->bind();
 	m_funcs->glDisable(GL_LIGHTING);
-	QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
-	m_funcs->glDrawArrays(GL_TRIANGLES, 0, 3);
-	m_program->release();
+
+	qDebug() << "m_prg_color_vertex->bind() =" << m_prg_color_vertex->bind();
+
+	// draw axis
+	m_vao_axis.bind();
+	m_axis_points.bind();
+	m_axis_indices.bind();
+	quintptr offset = 0;
+	int pos = m_prg_color_vertex->attributeLocation("a_vertex");
+	m_prg_color_vertex->enableAttributeArray(pos);
+	m_prg_color_vertex->setAttributeBuffer(pos, GL_FLOAT, offset, 3
+										   , sizeof(PosCol));
+	offset += sizeof(QVector3D);
+	int col = m_prg_color_vertex->attributeLocation("a_color");
+	m_prg_color_vertex->enableAttributeArray(col);
+	m_prg_color_vertex->setAttributeBuffer(col, GL_FLOAT, offset, 4
+										   ,sizeof(PosCol));
+	m_funcs->glDrawElements(GL_LINES, 12, GL_UNSIGNED_INT, nullptr);
+	//~ m_prg_color_vertex->disableAttributeArray(col);
+	//~ m_prg_color_vertex->disableAttributeArray(pos);
+
+	// draw triangle
+	qDebug() << "draw triangle";
+	m_vao_triangle.bind();
+	m_triangle_points.bind();
+	m_triangle_indices.bind();
+	offset = 0;
+	pos = m_prg_color_vertex->attributeLocation("a_vertex");
+	m_prg_color_vertex->enableAttributeArray(pos);
+	m_prg_color_vertex->setAttributeBuffer(pos, GL_FLOAT, offset, 3
+										   , sizeof(PosCol));
+	offset += sizeof(QVector3D);
+	col = m_prg_color_vertex->attributeLocation("a_color");
+	m_prg_color_vertex->enableAttributeArray(col);
+	m_prg_color_vertex->setAttributeBuffer(col, GL_FLOAT, offset, 4
+										   ,sizeof(PosCol));
+	m_funcs->glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+	m_prg_color_vertex->disableAttributeArray(col);
+	m_prg_color_vertex->disableAttributeArray(pos);
+	m_prg_color_vertex->release();
 }
 
 void GLWidget::resizeGL(int w, int h)
