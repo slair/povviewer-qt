@@ -17,7 +17,11 @@ pov_Transform::pov_Transform()
 
 pov_Transform::~pov_Transform()
 {
-	delete [] m_matrix;
+	qDebug() << "pov_Transform::~pov_Transform()";
+	qDebug() << "m_matrix =" << m_matrix;
+	delete[] m_matrix;
+	m_matrix = nullptr;
+	qDebug() << "pov_Transform deleted";
 }
 
 double pov_Transform::operator[](const int idx) const

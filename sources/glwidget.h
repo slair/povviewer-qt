@@ -84,9 +84,9 @@ protected:
 	//~ void mouseMoveEvent(QMouseEvent *event) override;
 
 private:
-	pov_Scene* m_scene;
-	QOpenGLFunctions_2_0 *m_funcs {nullptr};
-	QOpenGLShaderProgram *m_prg_color_vertex = nullptr;
+	pov_Scene* m_scene = nullptr;
+	QOpenGLFunctions_2_0* m_funcs = nullptr;
+	QOpenGLShaderProgram* m_prg_color_vertex = nullptr;
 	void initializeAxis();
 	void initializeTriangle();
 	void initializeShaders();

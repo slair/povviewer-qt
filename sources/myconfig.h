@@ -13,6 +13,8 @@
 #include <QFile>
 #include <QDebug>
 
+#include "v2s.h"
+
 #define CFG_FILENAME "povviewer-qt.ini"
 
 class Config : public QObject {
@@ -164,19 +166,21 @@ public:
 		}
 	}
 
-	void from_bg();		// from QVector4D to QString
-	void to_bg();		// from QString to QVector4D
 	QString qs_bg_color() {
-		from_bg();
+		m_qs_bg_color = QVector4D_to_QString(m_bg_color);
 		return m_qs_bg_color;
 	}
 	void set_qs_bg_color(QString& s) {
 		m_qs_bg_color = s;
-		to_bg();
+		m_bg_color = QString_to_QVector4D(m_qs_bg_color);
 		m_Changed = true;
 	}
 	QVector4D bg_color() const {
 		return m_bg_color;
+	}
+	void set_bg_color(QVector4D& v) {
+		m_bg_color = v;
+		m_Changed = true;
 	}
 
 	QString path_to_debuglog() const {

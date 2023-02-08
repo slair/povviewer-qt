@@ -11,6 +11,8 @@
 #include <QDir>
 #include <QDateTime>
 
+#include <vld.h>
+
 #include "povviewer.h"
 #include "myconfig.h"
 #include "pov_scene.h"
@@ -117,9 +119,9 @@ int main(int argc, char *argv[])
 	qDebug() << "Home dir" << QDir::homePath();
 	qDebug() << "Temporary dir" << QDir::tempPath();
 
-	static Config cfg;
+	QApplication* app = new QApplication(argc, argv);
 
-	QApplication app(argc, argv);
+	Config* cfg = new Config();
 
 	QCoreApplication::setApplicationName("povviewer-qt");
 	QCoreApplication::setOrganizationName("povviewer");
@@ -129,16 +131,12 @@ int main(int argc, char *argv[])
 	parser.setApplicationDescription(QCoreApplication::applicationName());
 	parser.addHelpOption();
 	parser.addVersionOption();
-	//~ QCommandLineOption multipleSampleOption("multisample", "Multisampling");
-	//~ parser.addOption(multipleSampleOption);
-	//~ QCommandLineOption coreProfileOption("coreprofile", "Use core profile");
-	//~ parser.addOption(coreProfileOption);
 
 	parser.addPositionalArgument("filename"
 								 , QCoreApplication::translate("main"
 										 , "The file to open(.pov / .dump)."));
 
-	parser.process(app);
+	parser.process(*app);
 
 	QString filename;
 
@@ -170,7 +168,7 @@ int main(int argc, char *argv[])
 	}
 
 	// done:   5. create scene object
-	pov_Scene* scene = new pov_Scene(&cfg, fi_scene.fileName());
+	pov_Scene* scene = new pov_Scene(cfg, fi_scene.fileName());
 	qDebug() << *scene;
 
 	QSurfaceFormat fmt;
@@ -181,14 +179,30 @@ int main(int argc, char *argv[])
 	QSurfaceFormat::setDefaultFormat(fmt);
 
 	// done:   6. create window
-	MainWindow main_window(scene);
+	MainWindow* main_window = new MainWindow(scene);
 
 	// done:   7. show window
-	main_window.show();
+	main_window->show();
 
-	//~ delete scene;
-	return app.exec();
-	return 0;
+	int exitcode = app->exec();
+
+	delete main_window;
+	main_window = nullptr;
+	qDebug() << "main_window deleted";
+
+	delete scene;
+	scene = nullptr;
+	qDebug() << "scene deleted";
+
+	delete cfg;
+	cfg = nullptr;
+	qDebug() << "cfg deleted";
+
+	//~ qDebug() << "delete app";
+	//~ delete app;
+	//~ qDebug() << "app deleted";
+	//~ _CrtDumpMemoryLeaks();
+	return exitcode;
 
 	//~ QSurfaceFormat fmt;
 	//~ fmt.setDepthBufferSize(24);

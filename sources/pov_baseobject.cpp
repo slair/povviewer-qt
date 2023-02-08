@@ -11,13 +11,20 @@ pov_BaseObject::pov_BaseObject(pov_Scene* s)
 {
 	m_scene = s;
 	m_tag = "BASE";
-	m_transform = NULL;
+	m_transform = nullptr;
 	memset(m_bbox, 0, sizeof(m_bbox));
 	memset(m_color, 0, sizeof(m_color));
 }
 
 pov_BaseObject::~pov_BaseObject()
 {
+	qDebug() << "pov_BaseObject::~pov_BaseObject()";
+	qDebug() << m_transform;
+	if (m_transform != nullptr) {
+		delete m_transform;
+		m_transform = nullptr;
+	}
+	qDebug() << "pov_BaseObject deleted";
 }
 
 QString pov_BaseObject::tag() const
@@ -34,7 +41,7 @@ QDebug operator<<(QDebug d, const pov_BaseObject& obj)
 				<< ">, <" << obj.m_bbox[1][0] << ", " << obj.m_bbox[1][1]
 				<< ", " << obj.m_bbox[1][2] << ">" << endl;
 
-	if (obj.m_transform != NULL) {
+	if (obj.m_transform != nullptr) {
 		d << "\ttransform: " << endl;
 		d << *(obj.m_transform) << endl;
 	}
@@ -76,5 +83,6 @@ int pov_BaseObject::read(QDataStream& ds)
 		qDebug() << "COLR absent" << tmp;
 	}
 
+	delete[] tmp;
 	return freaded;
 }

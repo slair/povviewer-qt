@@ -39,11 +39,28 @@ GLWidget::GLWidget(QWidget *parent, pov_Scene* scene)
 	setFormat(fmt);
 }
 
+void GLWidget::cleanup()
+{
+	qDebug() << "GLWidget::cleanup()";
+	if (m_prg_color_vertex == nullptr)
+		return;
+	makeCurrent();
+	m_axis_indices.destroy();
+	m_axis_points.destroy();
+	m_triangle_indices.destroy();
+	m_triangle_points.destroy();
+	m_vao_axis.destroy();
+	m_vao_triangle.destroy();
+	delete m_prg_color_vertex;
+	m_prg_color_vertex = nullptr;
+	doneCurrent();
+}
+
 GLWidget::~GLWidget()
 {
 	qDebug() << "GLWidget::~GLWidget()";
 	cleanup();
-	delete m_scene;
+	qDebug() << "GLWidget deleted";
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -54,17 +71,6 @@ QSize GLWidget::minimumSizeHint() const
 QSize GLWidget::sizeHint() const
 {
 	return QSize(512, 384);
-}
-
-void GLWidget::cleanup()
-{
-	if (m_prg_color_vertex == nullptr)
-		return;
-	makeCurrent();
-	//~ m_logoVbo.destroy();
-	delete m_prg_color_vertex;
-	m_prg_color_vertex = nullptr;
-	doneCurrent();
 }
 
 void GLWidget::initializeGL()
@@ -121,23 +127,9 @@ void GLWidget::initializeGL()
 	connect(context(), &QOpenGLContext::aboutToBeDestroyed, this
 			, &GLWidget::cleanup);
 
-	//~ m_prg_color_vertex->bind();
-	//~ m_prg_color_vertex->release();
+	m_prg_color_vertex->bind();
+	m_prg_color_vertex->release();
 }
-
-/*int add_color_vertex(GLfloat* p, QVector4D c, QVector3D v)
-{
-	*p++ = c[0];
-	*p++ = c[1];
-	*p++ = c[2];
-	*p++ = c[3];
-
-	*p++ = v[0];
-	*p++ = v[1];
-	*p++ = v[2];
-
-	return 7;
-}*/
 
 template <class _T>
 GLuint add_item(QVector<_T>& v, const _T i)
@@ -168,7 +160,7 @@ void GLWidget::initializeAxis()
 	float _as = m_scene->cfg()->axis_size() / 2.0;
 
 	// X axis
-	indices << add_item(points, PosCol(QVector3D(0, 0, 0), COLOR_BRIGHT_RED));
+	indices << add_item(points, {QVector3D(0, 0, 0), COLOR_BRIGHT_RED});
 	indices << add_item(points, {QVector3D(_as, 0, 0), COLOR_BRIGHT_RED});
 	indices << add_item(points, {QVector3D(0, 0, 0), COLOR_RED});
 	indices << add_item(points, {QVector3D(-_as, 0, 0), COLOR_RED});
@@ -208,12 +200,15 @@ void GLWidget::initializeAxis()
 	m_axis_indices.setUsagePattern(QOpenGLBuffer::StaticDraw);
 	m_axis_indices.allocate(indices.constData()
 							, indices.size() * sizeof(GLuint));
+
+	indices.clear();
+	points.clear();
 }
 
 void GLWidget::initializeTriangle()
 {
 	// setup vertex data
-	GLfloat vertices3[] = {
+	/*GLfloat vertices3[] = {
 		// Positions
 		0.0f, 1.0f, 0.0f, 0.0f,		// color Bottom right corner
 		0.5f, -0.5f, 0.0f,			// Bottom right corner
@@ -221,7 +216,7 @@ void GLWidget::initializeTriangle()
 		0.0f,  0.5f, 0.0f,			// Top corner
 		0.0f, 0.0f, 1.0f, 0.0f,		// Bottom left corner
 		-0.5f, -0.5f, 0.0f,			// color Bottom left corner
-	};
+	};*/
 	QVector<PosCol> points;
 	QVector<GLuint> indices;
 
@@ -256,6 +251,9 @@ void GLWidget::initializeTriangle()
 	m_triangle_indices.setUsagePattern(QOpenGLBuffer::StaticDraw);
 	m_triangle_indices.allocate(indices.constData()
 							, indices.size() * sizeof(GLuint));
+
+	indices.clear();
+	points.clear();
 }
 
 void GLWidget::initializeShaders()
@@ -279,7 +277,7 @@ void GLWidget::paintGL()
 	m_funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_funcs->glDisable(GL_LIGHTING);
 
-	qDebug() << "m_prg_color_vertex->bind() =" << m_prg_color_vertex->bind();
+	m_prg_color_vertex->bind();
 
 	// draw axis
 	m_vao_axis.bind();
@@ -300,7 +298,7 @@ void GLWidget::paintGL()
 	//~ m_prg_color_vertex->disableAttributeArray(pos);
 
 	// draw triangle
-	qDebug() << "draw triangle";
+	//~ qDebug() << "draw triangle";
 	m_vao_triangle.bind();
 	m_triangle_points.bind();
 	m_triangle_indices.bind();
@@ -322,6 +320,7 @@ void GLWidget::paintGL()
 
 void GLWidget::resizeGL(int w, int h)
 {
+	qDebug() << "GLWidget::resizeGL(int" << w << ", int" << h << ")";
 	if (!m_funcs)
 		return;
 

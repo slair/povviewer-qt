@@ -14,6 +14,7 @@ HEADERS       =	sources/myconfig.h \
 				sources/glwidget.h \
 				sources/mainwindow.h \
 				sources/vec3d.h \
+				sources/v2s.h \
 				sources/povviewer.h \
 				sources/pov_scene.h \
 				sources/pov_transform.h \
@@ -24,6 +25,7 @@ SOURCES       =	sources/myconfig.cpp \
 				sources/glwidget.cpp \
 				sources/mainwindow.cpp \
 				sources/vec3d.cpp \
+				sources/v2s.cpp \
 				sources/main.cpp \
 				sources/pov_scene.cpp \
 				sources/pov_transform.cpp \
