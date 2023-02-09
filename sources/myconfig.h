@@ -52,12 +52,19 @@ class Config : public QObject {
 	Q_PROPERTY(QString path_to_warninglog READ path_to_warninglog
 			   WRITE set_path_to_warninglog)
 
-	Q_PROPERTY(QString bg_color READ qs_bg_color
-			   WRITE set_qs_bg_color)
+	Q_PROPERTY(QVector4D bg_color READ bg_color
+			   WRITE set_bg_color)
+
+	Q_PROPERTY(bool is_perspective READ is_perspective WRITE set_perspective)
 
 	Q_PROPERTY(bool show_axis READ show_axis WRITE set_show_axis)
-	Q_PROPERTY(bool is_perspective READ is_perspective WRITE set_perspective)
-	Q_PROPERTY(float axis_size READ axis_size WRITE set_axis_size)
+	Q_PROPERTY(float axis_size MEMBER m_fAxisSize READ axis_size WRITE set_axis_size)
+	Q_PROPERTY(bool m_bShowBBOX READ show_bbox WRITE set_show_bbox)
+	Q_PROPERTY(bool m_bShowPOINTS READ show_bbox WRITE set_show_bbox)
+	Q_PROPERTY(float m_fPointsSize READ points_size WRITE set_points_size)
+	Q_PROPERTY(bool m_bShowLINES READ show_lines WRITE set_show_lines)
+	Q_PROPERTY(float m_fLinesWidth READ line_width WRITE set_line_width)
+	Q_PROPERTY(bool m_bShowSOLID READ show_solid WRITE set_show_solid)
 
 private:
 	bool m_Changed;
@@ -79,177 +86,74 @@ private:
 	QString m_fp_render;		// fullpath to render log
 	QString m_fp_statistic;		// fullpath to statistic log
 	QString m_fp_warning;		// fullpath to warning log
-	QString m_qs_bg_color;		// window background color RGBA for Config
-	QVector4D m_bg_color;		// window background color RGBA internal
+	QVector4D m_bg_color;		// window background color RGBA
+	bool m_bIsPerspective;		// perspective camera, else orthographic
 	bool m_bShowAxis;			// show axis X, Y, Z
 	float m_fAxisSize;			// axis size
-	bool m_bIsPerspective;		// perspective camera, else orthographic
+	bool m_bShowBBOX;			// show bounding boxes
+	bool m_bShowPOINTS;			// show points
+	float m_fPointsSize;		// points size
+	bool m_bShowLINES;			// show wireframes
+	float m_fLinesWidth;		// line width
+	bool m_bShowSOLID;			// show faces
 
 public:
-	float axis_size() const {
-		return m_fAxisSize;
-	}
-	void set_axis_size(float f) {
-		m_fAxisSize = f;
-		m_Changed = true;
-	}
+	bool change_window_pos() const;
+	void set_change_window_pos(bool b);
+	int window_pos_x() const;
+	void set_window_pos_x(int i);
+	int window_pos_y() const;
+	void set_window_pos_y(int i);
 
-	bool is_perspective() const {
-		return m_bIsPerspective;
-	}
-	void set_perspective(bool b) {
-		m_bIsPerspective = b;
-		m_Changed = true;
-	}
+	bool change_window_size() const;
+	void set_change_window_size(bool b);
+	uint window_width() const;
+	void set_window_width(uint ui);
+	uint window_height() const;
+	void set_window_height(uint ui);
 
-	bool change_window_pos() const {
-		return m_bChgWinPos;
-	}
-	void set_change_window_pos(bool b) {
-		m_bChgWinPos = b;
-		m_Changed = true;
-	}
-	int window_pos_x() const {
-		return m_iWinPosX;
-	}
-	void set_window_pos_x(int i) {
-		if (m_bChgWinPos) {
-			m_iWinPosX = i;
-			m_Changed = true;
-		} else {
-			qWarning() << "Can't change window_pos_x. "
-					   "change_window_pos is false";
-		}
-	}
-	int window_pos_y() const {
-		return m_iWinPosY;
-	}
-	void set_window_pos_y(int i) {
-		if (m_bChgWinPos) {
-			m_iWinPosY = i;
-			m_Changed = true;
-		} else {
-			qWarning() << "Can't change window_pos_y. "
-					   "change_window_pos is false";
-		}
-	}
+	QVector4D bg_color() const;
+	void set_bg_color(QVector4D& v);
 
-	bool change_window_size() const {
-		return m_bChgWinSize;
-	}
-	void set_change_window_size(bool b) {
-		m_bChgWinSize = b;
-		m_Changed = true;
-	}
-	uint window_width() const {
-		return m_uiWinWidth;
-	}
-	void set_window_width(uint ui) {
-		if (m_bChgWinSize) {
-			m_uiWinWidth = ui;
-			m_Changed = true;
-		} else {
-			qWarning() << "Can't change window_width. "
-					   "change_window_size is false";
-		}
-	}
-	uint window_height() const {
-		return m_uiWinHeight;
-	}
-	void set_window_height(uint ui) {
-		if (m_bChgWinSize) {
-			m_uiWinHeight = ui;
-			m_Changed = true;
-		} else {
-			qWarning() << "Can't change window_height. "
-					   "change_window_size is false";
-		}
-	}
+	QString path_to_debuglog() const;
+	void set_path_to_debuglog(const QString& s);
+	QString path_to_fatallog() const;
+	void set_path_to_fatallog(const QString& s);
+	QString path_to_renderlog() const;
+	void set_path_to_renderlog(const QString& s);
+	QString path_to_statisticlog() const;
+	void set_path_to_statisticlog(const QString& s);
+	QString path_to_warninglog() const;
+	void set_path_to_warninglog(const QString& s);
 
-	QString qs_bg_color() {
-		m_qs_bg_color = QVector4D_to_QString(m_bg_color);
-		return m_qs_bg_color;
-	}
-	void set_qs_bg_color(QString& s) {
-		m_qs_bg_color = s;
-		m_bg_color = QString_to_QVector4D(m_qs_bg_color);
-		m_Changed = true;
-	}
-	QVector4D bg_color() const {
-		return m_bg_color;
-	}
-	void set_bg_color(QVector4D& v) {
-		m_bg_color = v;
-		m_Changed = true;
-	}
+	QString path_to_povdump() const;
+	void set_path_to_povdump(const QString& s);
 
-	QString path_to_debuglog() const {
-		return m_fp_debug;
-	}
-	void set_path_to_debuglog(const QString& s) {
-		m_fp_debug = s;
-		m_Changed = true;
-	}
-	QString path_to_fatallog() const {
-		return m_fp_fatal;
-	}
-	void set_path_to_fatallog(const QString& s) {
-		m_fp_fatal = s;
-		m_Changed = true;
-	}
-	QString path_to_renderlog() const {
-		return m_fp_render;
-	}
-	void set_path_to_renderlog(const QString& s) {
-		m_fp_render = s;
-		m_Changed = true;
-	}
-	QString path_to_statisticlog() const {
-		return m_fp_statistic;
-	}
-	void set_path_to_statisticlog(const QString& s) {
-		m_fp_statistic = s;
-		m_Changed = true;
-	}
-	QString path_to_warninglog() const {
-		return m_fp_warning;
-	}
-	void set_path_to_warninglog(const QString& s) {
-		m_fp_warning = s;
-		m_Changed = true;
-	}
+	QString path_to_dump() const;
+	void set_path_to_dump(const QString& s);
 
-	QString path_to_povdump() const {
-		return m_fp_povdumpbin;
-	}
-	void set_path_to_povdump(const QString& s) {
-		m_fp_povdumpbin = s;
-		m_Changed = true;
-	}
+	QString path_to_cfg() const;
+	void set_path_to_cfg(const QString& s);
 
-	QString path_to_dump() const {
-		return m_fp_dump;
-	}
-	void set_path_to_dump(const QString& s) {
-		m_fp_dump = s;
-		m_Changed = true;
-	}
+	bool is_perspective() const;
+	void set_perspective(bool b);
 
-	QString path_to_cfg() const {
-		return m_fp_cfg;
-	}
-	void set_path_to_cfg(const QString& s) {
-		m_fp_cfg = s;
-		m_Changed = true;
-	}
-
-	bool show_axis() const {
-		return m_bShowAxis;
-	}
-	void set_show_axis(bool b) {
-		m_bShowAxis = b;
-		m_Changed = true;
-	}
+	bool show_axis() const;
+	void set_show_axis(bool b);
+	float axis_size() const;
+	void set_axis_size(float f);
+	bool show_bbox() const;
+	void set_show_bbox(bool b);
+	bool show_points() const;
+	void set_show_points(bool b);
+	float points_size() const;
+	void set_points_size(float f);
+	bool show_lines() const;
+	void set_show_lines(bool b);
+	float line_width() const;
+	void set_line_width(float f);
+	bool show_solid() const;
+	void set_show_solid(bool b);
 
 	Config();
 	~Config();
