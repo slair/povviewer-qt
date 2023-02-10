@@ -9,23 +9,42 @@
 #include <QCoreApplication>
 #include <math.h>
 
-const char* const VS_color_vertex =
-	"attribute vec4 a_color;\n"
-	"attribute vec3 a_vertex;\n"
-	"varying vec4 v_color;\n"
-	"varying vec3 v_vertex;\n"
+const char* const VS_a_pos_a_col =
+	"attribute vec3 a_pos;\n"
+	"attribute vec4 a_col;\n"
+	"varying vec3 v_pos;\n"
+	"varying vec4 v_col;\n"
 	"void main() {\n"
-	"   v_color = a_color;\n"
-	"   v_vertex = a_vertex;\n"
-	"   gl_Position = vec4(a_vertex, 1.0);\n"
+	"   v_pos = a_pos;\n"
+	"   v_col = a_col;\n"
+	"   gl_Position = vec4(a_pos, 1.0);\n"
 	"}\n";
 
-const char *const FS_color_vertex =
+const char *const FS_a_pos_a_col =
 	//~ "precision mediump float;\n"
-	"varying vec4 v_color;\n"
-	"varying vec3 v_vertex;\n"
+	"varying vec4 v_col;\n"
+	"varying vec3 v_pos;\n"
 	"void main() {\n"
-	"   gl_FragColor = v_color;\n"
+	"   gl_FragColor = v_col;\n"
+	"}\n";
+
+const char* const VS_u_col_a_pos =
+	"attribute vec3 a_pos;\n"
+	//~ "attribute vec4 a_col;\n"
+	"varying vec3 v_pos;\n"
+	//~ "varying vec4 v_col;\n"
+	"void main() {\n"
+	"   v_pos = a_pos;\n"
+	//~ "   v_col = a_col;\n"
+	"   gl_Position = vec4(a_pos, 1.0);\n"
+	"}\n";
+
+const char *const FS_u_col_a_pos =
+	//~ "precision mediump float;\n"
+	"uniform vec4 u_col;\n"
+	"varying vec3 v_pos;\n"
+	"void main() {\n"
+	"   gl_FragColor = u_col;\n"
 	"}\n";
 
 GLWidget::GLWidget(QWidget *parent, pov_Scene* scene)
@@ -42,17 +61,22 @@ GLWidget::GLWidget(QWidget *parent, pov_Scene* scene)
 void GLWidget::cleanup()
 {
 	qDebug() << "GLWidget::cleanup()";
-	if (m_prg_color_vertex == nullptr)
+	if (m_prg_a_pos_a_col == nullptr)
 		return;
+
 	makeCurrent();
+
 	m_axis_indices.destroy();
 	m_axis_points.destroy();
-	m_triangle_indices.destroy();
-	m_triangle_points.destroy();
 	m_vao_axis.destroy();
-	m_vao_triangle.destroy();
-	delete m_prg_color_vertex;
-	m_prg_color_vertex = nullptr;
+
+	clearBuffers();
+
+	delete m_prg_a_pos_a_col;
+	m_prg_a_pos_a_col = nullptr;
+	delete m_prg_u_col_a_pos;
+	m_prg_u_col_a_pos = nullptr;
+
 	doneCurrent();
 }
 
@@ -127,8 +151,8 @@ void GLWidget::initializeGL()
 	connect(context(), &QOpenGLContext::aboutToBeDestroyed, this
 			, &GLWidget::cleanup);
 
-	m_prg_color_vertex->bind();
-	m_prg_color_vertex->release();
+	m_prg_a_pos_a_col->bind();
+	m_prg_a_pos_a_col->release();
 }
 
 template <class _T>
@@ -208,23 +232,66 @@ void GLWidget::initializeAxis()
 	points.clear();
 }
 
-void GLWidget::getGeometry()
+void GLWidget::clearBuffers()
 {
-	// todo:  17. fill m_vbos and m_ibos with data from m_scene
+	qDebug() << "void GLWidget::clearBuffers()";
+
+	qDebug() << "m_vbos.size() =" << m_vbos.size();
+	for(int i = 0; i < m_vbos.size(); i++) {
+		if (m_vbos[i] != nullptr) {
+			//~ m_vbos[i]->release();
+			m_vbos[i]->destroy();
+			delete m_vbos[i];
+			m_vbos[i] = nullptr;
+		}
+	}
+	m_vbos.clear();
+	qDebug() << "m_vbos.clear()";
+
+	qDebug() << "m_ibos.size() =" << m_ibos.size();
+	for(int i = 0; i < m_ibos.size(); i++) {
+		if (m_ibos[i] != nullptr) {
+			//~ m_ibos[i]->release();
+			m_ibos[i]->destroy();
+			delete m_ibos[i];
+			m_ibos[i] = nullptr;
+		}
+	}
+	m_ibos.clear();
+	qDebug() << "m_ibos.clear()";
+
+	qDebug() << "m_mv.size() =" << m_mv.size();
+	for(int i = 0; i < m_mv.size(); i++) {
+		if (m_mv[i] != nullptr) {
+			qDebug() << m_mv[i];
+			delete m_mv[i];
+			m_mv[i] = nullptr;
+		}
+	}
+	m_mv.clear();
+	qDebug() << "m_mv.clear()";
+
+	qDebug() << "m_mc.size() = " << m_mc.size();
+	for(int i = 0; i < m_mc.size(); i++) {
+		if (m_mc[i] != nullptr) {
+			delete m_mc[i];
+			m_mc[i] = nullptr;
+		}
+	}
+	m_mc.clear();
+	qDebug() << "m_mc.clear()";
 }
 
-void GLWidget::initializeTriangle()
+void GLWidget::getGeometry()
+{
+	clearBuffers();
+	// todo:  17. fill m_vbos and m_ibos with data from m_scene
+	m_scene->getGeometry(m_mv, m_mc, m_vbos, m_ibos);
+}
+
+/*void GLWidget::initializeTriangle()
 {
 	// setup vertex data
-	/*GLfloat vertices3[] = {
-		// Positions
-		0.0f, 1.0f, 0.0f, 0.0f,		// color Bottom right corner
-		0.5f, -0.5f, 0.0f,			// Bottom right corner
-		1.0f,  0.0f, 0.0f, 0.0f,	// color Top corner
-		0.0f,  0.5f, 0.0f,			// Top corner
-		0.0f, 0.0f, 1.0f, 0.0f,		// Bottom left corner
-		-0.5f, -0.5f, 0.0f,			// color Bottom left corner
-	};*/
 	QVector<PosCol> points;
 	QVector<GLuint> indices;
 
@@ -262,35 +329,53 @@ void GLWidget::initializeTriangle()
 
 	indices.clear();
 	points.clear();
-}
+}*/
 
 void GLWidget::initializeShaders()
 {
-	//~ m_prg_color_vertex = std::make_unique<QOpenGLShaderProgram>();
-	m_prg_color_vertex = new QOpenGLShaderProgram();
-	m_prg_color_vertex->addShaderFromSourceCode(QOpenGLShader::Vertex
-			, VS_color_vertex);
-	m_prg_color_vertex->addShaderFromSourceCode(QOpenGLShader::Fragment
-			, FS_color_vertex);
-	m_prg_color_vertex->link();
+	//~ m_prg_a_pos_a_col = std::make_unique<QOpenGLShaderProgram>();
+	m_prg_a_pos_a_col = new QOpenGLShaderProgram();
+	m_prg_a_pos_a_col->addShaderFromSourceCode(QOpenGLShader::Vertex
+			, VS_a_pos_a_col);
+	m_prg_a_pos_a_col->addShaderFromSourceCode(QOpenGLShader::Fragment
+			, FS_a_pos_a_col);
+	m_prg_a_pos_a_col->link();
+
+	m_prg_u_col_a_pos = new QOpenGLShaderProgram();
+	m_prg_u_col_a_pos->addShaderFromSourceCode(QOpenGLShader::Vertex
+			, VS_u_col_a_pos);
+	m_prg_u_col_a_pos->addShaderFromSourceCode(QOpenGLShader::Fragment
+			, FS_u_col_a_pos);
+	m_prg_u_col_a_pos->link();
 }
 
 void GLWidget::drawAxis()
 {
+	m_prg_a_pos_a_col->bind();
 	m_vao_axis.bind();
 	m_axis_points.bind();
 	m_axis_indices.bind();
+
 	quintptr offset = 0;
-	int pos = m_prg_color_vertex->attributeLocation("a_vertex");
-	m_prg_color_vertex->enableAttributeArray(pos);
-	m_prg_color_vertex->setAttributeBuffer(pos, GL_FLOAT, offset, 3
-										   , sizeof(PosCol));
+	int pos = m_prg_a_pos_a_col->attributeLocation("a_pos");
+	m_prg_a_pos_a_col->enableAttributeArray(pos);
+	m_prg_a_pos_a_col->setAttributeBuffer(pos, GL_FLOAT, offset, 3
+										  , sizeof(PosCol));
 	offset += sizeof(QVector3D);
-	int col = m_prg_color_vertex->attributeLocation("a_color");
-	m_prg_color_vertex->enableAttributeArray(col);
-	m_prg_color_vertex->setAttributeBuffer(col, GL_FLOAT, offset, 4
-										   ,sizeof(PosCol));
+	int col = m_prg_a_pos_a_col->attributeLocation("a_col");
+	m_prg_a_pos_a_col->enableAttributeArray(col);
+	m_prg_a_pos_a_col->setAttributeBuffer(col, GL_FLOAT, offset, 4
+										  ,sizeof(PosCol));
 	m_funcs->glDrawElements(GL_LINES, 12, GL_UNSIGNED_INT, nullptr);
+
+	m_axis_indices.release();
+	m_axis_points.release();
+	m_vao_axis.release();
+	m_prg_a_pos_a_col->release();
+}
+
+void GLWidget::drawGeometry()
+{
 }
 
 void GLWidget::paintGL()
@@ -303,7 +388,7 @@ void GLWidget::paintGL()
 	m_funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_funcs->glDisable(GL_LIGHTING);
 
-	m_prg_color_vertex->bind();
+	m_prg_a_pos_a_col->bind();
 
 	// draw axis
 	if (m_scene->cfg()->show_axis()) {
@@ -313,25 +398,25 @@ void GLWidget::paintGL()
 	// draw scene
 	drawGeometry();
 
-	// draw triangle
+	/*// draw triangle
 	//~ qDebug() << "draw triangle";
 	m_vao_triangle.bind();
 	m_triangle_points.bind();
 	m_triangle_indices.bind();
 	offset = 0;
-	pos = m_prg_color_vertex->attributeLocation("a_vertex");
-	m_prg_color_vertex->enableAttributeArray(pos);
-	m_prg_color_vertex->setAttributeBuffer(pos, GL_FLOAT, offset, 3
+	pos = m_prg_a_pos_a_col->attributeLocation("a_vertex");
+	m_prg_a_pos_a_col->enableAttributeArray(pos);
+	m_prg_a_pos_a_col->setAttributeBuffer(pos, GL_FLOAT, offset, 3
 										   , sizeof(PosCol));
 	offset += sizeof(QVector3D);
-	col = m_prg_color_vertex->attributeLocation("a_color");
-	m_prg_color_vertex->enableAttributeArray(col);
-	m_prg_color_vertex->setAttributeBuffer(col, GL_FLOAT, offset, 4
+	col = m_prg_a_pos_a_col->attributeLocation("a_color");
+	m_prg_a_pos_a_col->enableAttributeArray(col);
+	m_prg_a_pos_a_col->setAttributeBuffer(col, GL_FLOAT, offset, 4
 										   ,sizeof(PosCol));
 	m_funcs->glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
-	m_prg_color_vertex->disableAttributeArray(col);
-	m_prg_color_vertex->disableAttributeArray(pos);
-	m_prg_color_vertex->release();
+	m_prg_a_pos_a_col->disableAttributeArray(col);
+	m_prg_a_pos_a_col->disableAttributeArray(pos);
+	m_prg_a_pos_a_col->release();*/
 }
 
 void GLWidget::resizeGL(int w, int h)

@@ -11,6 +11,7 @@
 #include <QVector>
 #include <QVector3D>
 #include <QOpenGLFunctions>
+#include <QOpenGLBuffer>
 
 #include "myconfig.h"
 
@@ -29,13 +30,12 @@ public:
 	friend QDebug operator << (QDebug d, const pov_Scene& pov_Scene);
 	Config* cfg() const {return m_cfg;}
 	QString filename() const {return m_scenefilename;}
-	void begin_frame();
-	void end_frame();
-	void setup_camera();
-	void initGL();
-	void drawGL();
 	void setup_perspective(float cam_ratio);
 	void setup_ortho();
+	void getGeometry(QVector<QMatrix4x4*>& m_mv
+	, QVector<QVector4D*>& m_mc
+	, QVector<QOpenGLBuffer*>& m_vbos
+	, QVector<QOpenGLBuffer*>& m_ibos);
 
 private:
 	Config* m_cfg;

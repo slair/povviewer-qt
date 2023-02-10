@@ -86,12 +86,14 @@ protected:
 private:
 	pov_Scene* m_scene = nullptr;
 	QOpenGLFunctions_2_0* m_funcs = nullptr;
-	QOpenGLShaderProgram* m_prg_color_vertex = nullptr;
+	QOpenGLShaderProgram* m_prg_a_pos_a_col = nullptr;
+	QOpenGLShaderProgram* m_prg_u_col_a_pos = nullptr;
 	void initializeAxis();
 	void drawAxis();
 	void getGeometry();		// fill m_vbos and m_ibos with data from m_scene
 	void drawGeometry();
 	void initializeShaders();
+	void clearBuffers();
 
 	QOpenGLBuffer m_axis_points {QOpenGLBuffer::VertexBuffer};
 	QOpenGLBuffer m_axis_indices {QOpenGLBuffer::IndexBuffer};
@@ -104,9 +106,10 @@ private:
 	QMatrix4x4 m_proj;
 	QMatrix4x4 m_view;
 
-	QVector<QMatrix4x4> m_mod;
-	QVector<QOpenGLBuffer*> m_vbos;
-	QVector<QOpenGLBuffer*> m_ibos;
+	QVector<QMatrix4x4*> m_mv;		// modelview matrices
+	QVector<QOpenGLBuffer*> m_vbos;	// VertexBuffers
+	QVector<QOpenGLBuffer*> m_ibos;	// IndexBuffers
+	QVector<QVector4D*> m_mc;		// models colors
 
 	//~ void setupVertexAttribs();
 	//~ bool m_core;

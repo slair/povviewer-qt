@@ -5,8 +5,9 @@
 
 #include <QProcess>
 #include <QDataStream>
+#include <QMatrix4x4>
 //~ #include <qmath.h>
-#include <qopengl.h>
+//~ #include <qopengl.h>
 
 #include "pov_scene.h"
 
@@ -57,6 +58,25 @@ QDebug operator << (QDebug d, const pov_Scene& scene)
 	}
 	d << "\n-pov_Scene";
 	return d;
+}
+
+void pov_Scene::getGeometry(QVector<QMatrix4x4*>& m_mv
+							, QVector<QVector4D*>& m_mc
+							, QVector<QOpenGLBuffer*>& m_vbos
+							, QVector<QOpenGLBuffer*>& m_ibos)
+{
+	qDebug() << "void pov_Scene::getGeometry(" << m_mv
+			 << "," << m_mc << "," << m_vbos << "," << m_ibos << ")";
+
+	if (m_cfg->show_bbox()) {
+		for(int i = 0; i < m_objects.size(); i++) {
+			QMatrix4x4* mv = new QMatrix4x4();
+			mv->setToIdentity();	// fixme: one matrix for all bboxes
+			qDebug() << mv;
+			m_mv << mv;
+			m_objects[i]->getBBOX(m_mc, m_vbos, m_ibos);
+		}
+	}
 }
 
 bool delete_file(const QString& filepath)

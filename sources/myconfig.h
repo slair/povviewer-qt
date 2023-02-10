@@ -60,7 +60,7 @@ class Config : public QObject {
 	Q_PROPERTY(bool show_axis READ show_axis WRITE set_show_axis)
 	Q_PROPERTY(float axis_size MEMBER m_fAxisSize READ axis_size WRITE set_axis_size)
 	Q_PROPERTY(bool m_bShowBBOX READ show_bbox WRITE set_show_bbox)
-	Q_PROPERTY(bool m_bShowPOINTS READ show_bbox WRITE set_show_bbox)
+	Q_PROPERTY(bool m_bShowPOINTS READ show_points WRITE set_show_points)
 	Q_PROPERTY(float m_fPointsSize READ points_size WRITE set_points_size)
 	Q_PROPERTY(bool m_bShowLINES READ show_lines WRITE set_show_lines)
 	Q_PROPERTY(float m_fLinesWidth READ line_width WRITE set_line_width)

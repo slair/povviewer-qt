@@ -54,6 +54,20 @@ QDebug operator<<(QDebug d, const pov_BaseObject& obj)
 	return d;
 }
 
+void pov_BaseObject::getBBOX(QVector<QVector4D*>& m_mc
+							 , QVector<QOpenGLBuffer*>& m_vbos
+							 , QVector<QOpenGLBuffer*>& m_ibos)
+{
+	QVector4D* _color = new QVector4D(m_color[0], m_color[1], m_color[2], 1);
+	m_mc << _color;
+	qDebug() << "_color:" << _color;
+	QOpenGLBuffer* vbo = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
+	m_vbos << vbo;
+	qDebug() << "vbo:" << vbo;
+	QOpenGLBuffer* ibo = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
+	m_ibos << ibo;
+	qDebug() << "ibo:" << ibo;
+}
 int pov_BaseObject::read(QDataStream& ds)
 {
 	char* tmp = new char[5];

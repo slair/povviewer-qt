@@ -24,6 +24,8 @@ public:
 	int read(QDataStream& ds);
 	friend QDebug operator << (QDebug d, const pov_BaseObject& obj);
 	QString tag() const;
+	void getBBOX(QVector<QVector4D*>& m_mc, QVector<QOpenGLBuffer*>& m_vbos
+				 , QVector<QOpenGLBuffer*>& m_ibos);
 	//~ bool is_sphere;
 	//~ vec3d sphere_center;
 	//~ unsigned int tag;
