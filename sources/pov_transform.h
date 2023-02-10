@@ -14,6 +14,7 @@ private:
 public:
 	pov_Transform();
 	~pov_Transform();
+	void setToIdentity();
 	double operator[](const int idx) const;
 	//~ void apply();
 	//~ vec3d transform_vec3d(const vec3d v);

@@ -11,7 +11,8 @@ pov_BaseObject::pov_BaseObject(pov_Scene* s)
 {
 	m_scene = s;
 	m_tag = "BASE";
-	m_transform = nullptr;
+	//~ m_transform = nullptr;
+	m_transform = new pov_Transform();
 	memset(m_bbox, 0, sizeof(m_bbox));
 	memset(m_color, 0, sizeof(m_color));
 }
@@ -69,7 +70,6 @@ int pov_BaseObject::read(QDataStream& ds)
 
 	readed = ds.readRawData(tmp, 4);
 	if (readed == 4 && strncmp(tmp, "TRNS", 4) == 0) {
-		m_transform = new pov_Transform();
 		m_transform->read(ds);
 	} else {
 		qDebug() << "TRNS absent";

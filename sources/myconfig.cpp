@@ -39,6 +39,15 @@ Config::Config() : m_bChgWinPos(true), m_iWinPosX(80), m_iWinPosY(80)
 
 	m_bShowSOLID = true;		// show faces
 
+	m_CamPos = QVector3D(0, 0, 0);		// camera position <0,0,0>
+	m_CamTgt = QVector3D(0, 0, 1);		// camera target <0,0,1>
+	m_CamDir = QVector3D(0, 0, 1);		// camera direction <0,0,1>
+	m_CamRgt = QVector3D(1.33f, 0, 0);	// camera right 1.33*<1,0,0>
+	m_CamUp = QVector3D(0, 1, 0);		// camera right <0,1,0>
+	m_CamSky = QVector3D(0, 1, 0);		// camera right <0,1,0>
+	m_CamAngle = 67.38f;				// perspective camera angle	~67.380
+	// ( direction_length=0.5*right_length/tan(angle/2) )
+
 	load_from_dir(".", 1);	// load from HOME
 }
 
@@ -95,7 +104,7 @@ bool Config::save_to_dir(const QString& dir, int save_user) const
 			_value = QVector3D_to_QString(_v);
 			settings->setValue(_name, _value);
 		} else {
-			qDebug() << _name << mp.typeName();
+			//~ qDebug() << _name << mp.typeName();
 			settings->setValue(_name, property(mp.name()));
 		}
 	}
@@ -616,5 +625,37 @@ bool Config::show_solid() const
 void Config::set_show_solid(bool b)
 {
 	m_bShowSOLID = b;
+	m_Changed = true;
+}
+
+QVector3D Config::cam_pos() const
+{
+	return m_CamPos;
+}
+
+void Config::set_cam_pos(QVector3D v)
+{
+	m_CamPos = v;
+	m_Changed = true;
+}
+
+QVector3D Config::cam_tgt() const
+{
+	return m_CamTgt;
+}
+
+void Config::set_cam_tgt(QVector3D v)
+{
+	m_CamTgt = v;
+	m_Changed = true;
+}
+
+float Config::cam_angle() const
+{
+	return m_CamAngle;
+}
+void Config::set_cam_angle(float f)
+{
+	m_CamAngle = f;
 	m_Changed = true;
 }

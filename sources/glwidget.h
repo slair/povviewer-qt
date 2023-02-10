@@ -88,16 +88,25 @@ private:
 	QOpenGLFunctions_2_0* m_funcs = nullptr;
 	QOpenGLShaderProgram* m_prg_color_vertex = nullptr;
 	void initializeAxis();
-	void initializeTriangle();
+	void drawAxis();
+	void getGeometry();		// fill m_vbos and m_ibos with data from m_scene
+	void drawGeometry();
 	void initializeShaders();
 
 	QOpenGLBuffer m_axis_points {QOpenGLBuffer::VertexBuffer};
 	QOpenGLBuffer m_axis_indices {QOpenGLBuffer::IndexBuffer};
 	QOpenGLVertexArrayObject m_vao_axis;
 
-	QOpenGLBuffer m_triangle_points {QOpenGLBuffer::VertexBuffer};
-	QOpenGLBuffer m_triangle_indices {QOpenGLBuffer::IndexBuffer};
-	QOpenGLVertexArrayObject m_vao_triangle;
+	//~ QOpenGLBuffer m_triangle_points {QOpenGLBuffer::VertexBuffer};
+	//~ QOpenGLBuffer m_triangle_indices {QOpenGLBuffer::IndexBuffer};
+	//~ QOpenGLVertexArrayObject m_vao_triangle;
+
+	QMatrix4x4 m_proj;
+	QMatrix4x4 m_view;
+
+	QVector<QMatrix4x4> m_mod;
+	QVector<QOpenGLBuffer*> m_vbos;
+	QVector<QOpenGLBuffer*> m_ibos;
 
 	//~ void setupVertexAttribs();
 	//~ bool m_core;

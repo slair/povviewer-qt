@@ -66,6 +66,10 @@ class Config : public QObject {
 	Q_PROPERTY(float m_fLinesWidth READ line_width WRITE set_line_width)
 	Q_PROPERTY(bool m_bShowSOLID READ show_solid WRITE set_show_solid)
 
+	Q_PROPERTY(QVector3D camera_position READ cam_pos WRITE set_cam_pos)
+	Q_PROPERTY(QVector3D camera_target READ cam_tgt WRITE set_cam_tgt)
+	Q_PROPERTY(float camera_angle READ cam_angle WRITE set_cam_angle)
+
 private:
 	bool m_Changed;
 	bool m_bChgWinPos;
@@ -96,8 +100,23 @@ private:
 	bool m_bShowLINES;			// show wireframes
 	float m_fLinesWidth;		// line width
 	bool m_bShowSOLID;			// show faces
+	QVector3D m_CamPos;			// camera position <0,0,0>
+	QVector3D m_CamTgt;			// camera target <0,0,1>
+	QVector3D m_CamDir;			// camera direction <0,0,1>
+	QVector3D m_CamRgt;			// camera right 1.33*<1,0,0>
+	QVector3D m_CamUp;			// camera right <0,1,0>
+	QVector3D m_CamSky;			// camera right <0,1,0>
+	float m_CamAngle;			// perspective camera angle	~67.380
+	// ( direction_length=0.5*right_length/tan(angle/2) )
 
 public:
+	float cam_angle() const;
+	void set_cam_angle(float f);
+	QVector3D cam_pos() const;
+	void set_cam_pos(QVector3D v);
+	QVector3D cam_tgt() const;
+	void set_cam_tgt(QVector3D v);
+
 	bool change_window_pos() const;
 	void set_change_window_pos(bool b);
 	int window_pos_x() const;

@@ -122,7 +122,7 @@ void GLWidget::initializeGL()
 
 	initializeShaders();
 	initializeAxis();
-	initializeTriangle();
+	getGeometry();
 
 	connect(context(), &QOpenGLContext::aboutToBeDestroyed, this
 			, &GLWidget::cleanup);
@@ -154,6 +154,9 @@ GLuint add_item(QVector<_T>& v, const _T i)
 
 void GLWidget::initializeAxis()
 {
+	if (!m_scene->cfg()->show_axis()) {
+		return;
+	}
 	QVector<PosCol> points;
 	QVector<GLuint> indices;
 
@@ -203,6 +206,11 @@ void GLWidget::initializeAxis()
 
 	indices.clear();
 	points.clear();
+}
+
+void GLWidget::getGeometry()
+{
+	// todo:  17. fill m_vbos and m_ibos with data from m_scene
 }
 
 void GLWidget::initializeTriangle()
@@ -267,19 +275,8 @@ void GLWidget::initializeShaders()
 	m_prg_color_vertex->link();
 }
 
-void GLWidget::paintGL()
+void GLWidget::drawAxis()
 {
-	qDebug() << "GLWidget::paintGL()";
-
-	if (!m_funcs)
-		return;
-
-	m_funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	m_funcs->glDisable(GL_LIGHTING);
-
-	m_prg_color_vertex->bind();
-
-	// draw axis
 	m_vao_axis.bind();
 	m_axis_points.bind();
 	m_axis_indices.bind();
@@ -294,8 +291,27 @@ void GLWidget::paintGL()
 	m_prg_color_vertex->setAttributeBuffer(col, GL_FLOAT, offset, 4
 										   ,sizeof(PosCol));
 	m_funcs->glDrawElements(GL_LINES, 12, GL_UNSIGNED_INT, nullptr);
-	//~ m_prg_color_vertex->disableAttributeArray(col);
-	//~ m_prg_color_vertex->disableAttributeArray(pos);
+}
+
+void GLWidget::paintGL()
+{
+	qDebug() << "GLWidget::paintGL()";
+
+	if (!m_funcs)
+		return;
+
+	m_funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_funcs->glDisable(GL_LIGHTING);
+
+	m_prg_color_vertex->bind();
+
+	// draw axis
+	if (m_scene->cfg()->show_axis()) {
+		drawAxis();
+	}
+
+	// draw scene
+	drawGeometry();
 
 	// draw triangle
 	//~ qDebug() << "draw triangle";
