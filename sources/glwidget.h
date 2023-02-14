@@ -7,15 +7,16 @@
 #define GLWIDGET_H
 
 #include <QOpenGLWidget>
-#include <QOpenGLFunctions>
+#include <QOpenGLShaderProgram>
 #include <QOpenGLFunctions_2_0>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QMatrix4x4>
 
 #include "pov_scene.h"
+#include "camera.h"
 
-QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
+//~ QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
 class PosCol {
 public:
@@ -51,7 +52,8 @@ private:
 	QVector4D color;
 };
 
-class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions {
+//~ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions {
+class GLWidget : public QOpenGLWidget {
 	Q_OBJECT
 
 public:
@@ -80,44 +82,58 @@ protected:
 	void initializeGL() override;
 	void paintGL() override;
 	void resizeGL(int width, int height) override;
-	void mousePressEvent(QMouseEvent *e) override;
-	void mouseMoveEvent(QMouseEvent *e) override;
-	void mouseReleaseEvent(QMouseEvent *e) override;
-	void wheelEvent(QWheelEvent *e) override;
+	void keyPressEvent(QKeyEvent *event) override;
+	void mousePressEvent(QMouseEvent *event) override;
+	void mouseMoveEvent(QMouseEvent *event) override;
+	void mouseReleaseEvent(QMouseEvent *event) override;
+	void wheelEvent(QWheelEvent *event) override;
 
 private:
 	pov_Scene* m_scene = nullptr;
 	QOpenGLFunctions_2_0* m_funcs = nullptr;
 	QOpenGLShaderProgram* m_prg_a_pos_a_col = nullptr;
 	QOpenGLShaderProgram* m_prg_u_col_a_pos = nullptr;
-	void initializeAxis();
-	void drawAxis();
-	void getGeometry();		// fill m_vbos and m_ibos with data from m_scene
-	void drawGeometry();
+
+	Camera m_camera;
+
+	QOpenGLVertexArrayObject m_vao_axis;	// vao for axis
+	QOpenGLBuffer m_axis_points {QOpenGLBuffer::VertexBuffer};	// for axis
+	QOpenGLBuffer m_axis_indices {QOpenGLBuffer::IndexBuffer};	// for axis
+	QMatrix4x4 m_mm1;	// for axis
+
+	QOpenGLVertexArrayObject m_vao_scene;	// vao for scene
+	QVector<QMatrix4x4*> m_mm;		// model matrices for scene
+	QVector<QOpenGLBuffer*> m_vbos;	// VertexBuffers for scene
+	QVector<QOpenGLBuffer*> m_ibos;	// IndexBuffers for scene
+	QVector<QVector4D*> m_mc;		// models colors for scene
+
+	void initializeGeometry();
 	void initializeShaders();
 	void initializeTextures();
-	void initializeMatrices();
-	void generate_m_view();
-	void clearBuffers();
 
-	QOpenGLBuffer m_axis_points {QOpenGLBuffer::VertexBuffer};
-	QOpenGLBuffer m_axis_indices {QOpenGLBuffer::IndexBuffer};
-	QOpenGLVertexArrayObject m_vao_axis;
+	void getGeometry();		// fill m_vbos and m_ibos with data from m_scene
+	void getAxis();			// fill m_vbos and m_ibos with data from m_scene
 
-	QVector3D cam_pos;		// location
-	QVector3D cam_lat;		// look_at
-	QVector3D cam_up;		// up
-	QVector3D cam_right;	// right
-	QVector3D cam_dir;		// direction
-	float cam_han;		// horizontal angle
-	float cam_znear;
-	float cam_zfar;
-	float cam_ratio;
+	//~ void generate_m_view();
+	void clearBuffers();	// clear buffers for scene
+
+	void drawAxis();		// draw axis
+	void drawGeometry();	// draw scene
+
+	void show_cam() const;
+	//~ QVector3D cam_pos;		// location
+	//~ QVector3D cam_lat;		// look_at
+	//~ QVector3D cam_up;		// up
+	//~ QVector3D cam_right;	// right
+	//~ QVector3D cam_dir;		// direction
+	//~ float cam_han;		// horizontal angle
+	//~ float cam_znear;
+	//~ float cam_zfar;
+	//~ float cam_ratio;
 
 	//~ void fix_right();
 	//~ void fix_up();
 	//~ void fix_dir();
-	//~ void show_cam() const;
 
 	//~ QMatrix4x4 m_proj;
 	//~ QMatrix4x4 m_view;
@@ -128,12 +144,6 @@ private:
 	//~ bool m_mmb_pressed = false;
 	//~ bool m_rmb_pressed = false;
 	//~ float m_MouseSens = 0.1f;
-
-	QOpenGLVertexArrayObject m_vao_scene;
-	QVector<QMatrix4x4*> m_mm;		// model matrices
-	QVector<QOpenGLBuffer*> m_vbos;	// VertexBuffers
-	QVector<QOpenGLBuffer*> m_ibos;	// IndexBuffers
-	QVector<QVector4D*> m_mc;		// models colors
 
 	//~ void setupVertexAttribs();
 	//~ bool m_core;
@@ -154,4 +164,4 @@ private:
 	//~ static bool m_transparent;
 };
 
-#endif
+#endif // GLWIDGET_H

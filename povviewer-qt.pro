@@ -11,10 +11,11 @@ CONFIG += console
 CONFIG += debug
 
 HEADERS       =	sources/myconfig.h \
-				sources/glwidget.h \
+				#~ sources/glwidget.h \
 				sources/mainwindow.h \
 				sources/vec3d.h \
 				sources/v2s.h \
+				sources/poscol.h \
 				sources/povviewer.h \
 				sources/pov_scene.h \
 				sources/pov_transform.h \
@@ -23,7 +24,7 @@ HEADERS       =	sources/myconfig.h \
 				sources/camera.h
 
 SOURCES       =	sources/myconfig.cpp \
-				sources/glwidget.cpp \
+				#~ sources/glwidget.cpp \
 				sources/mainwindow.cpp \
 				sources/vec3d.cpp \
 				sources/v2s.cpp \

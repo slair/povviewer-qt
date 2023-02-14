@@ -56,9 +56,10 @@ GLWidget::GLWidget(QWidget *parent, pov_Scene* scene)
 	qDebug() << "GLWidget::GLWidget(" << parent << "," << scene << ")";
 	m_scene = scene;
 	QSurfaceFormat fmt = format();
-	fmt.setAlphaBufferSize(8);
+	fmt.setAlphaBufferSize(24);
 	qDebug() << "fmt.alphaBufferSize() =" << fmt.alphaBufferSize();
 	setFormat(fmt);
+	m_camera.setWindow(this);
 }
 
 void GLWidget::cleanup()
@@ -132,7 +133,6 @@ void GLWidget::initializeGL()
 	qInfo() << "OpenGL version:"
 			<< reinterpret_cast<const char *>(
 				m_funcs->glGetString(GL_VERSION));
-	//~ qDebug() << "GL_VERSION:" << *m_funcs->glGetString(GL_VERSION);
 
 	m_funcs->glClearColor(m_scene->cfg()->bg_color()[0]
 						  , m_scene->cfg()->bg_color()[1]
@@ -151,18 +151,23 @@ void GLWidget::initializeGL()
 	m_funcs->glDepthFunc(GL_LEQUAL);
 
 	initializeShaders();
-
-	initializeAxis();
-	getGeometry();
-
+	initializeGeometry();
 	initializeTextures();
-	initializeMatrices();
+	//~ initializeMatrices();
 
 	connect(context(), &QOpenGLContext::aboutToBeDestroyed, this
 			, &GLWidget::cleanup);
 }
 
-void GLWidget::initializeMatrices()
+void GLWidget::initializeGeometry()
+{
+	m_mm1.setToIdentity();
+
+	getAxis();
+	getGeometry();
+}
+
+/*void GLWidget::initializeMatrices()
 {
 	m_mm1.setToIdentity();
 
@@ -181,11 +186,11 @@ void GLWidget::initializeMatrices()
 
 	m_proj.setToIdentity();
 	m_proj.perspective(cam_han / cam_ratio, cam_ratio, cam_znear, cam_zfar);
-}
+}*/
 
 void GLWidget::initializeTextures() {}
 
-void GLWidget::generate_m_view()
+/*void GLWidget::generate_m_view()
 {
 	m_view.setToIdentity();
 	//~ m_view.scale(-1, 1, 1);
@@ -211,18 +216,18 @@ void GLWidget::fix_up()
 {
 	cam_up = QVector3D::crossProduct(cam_right, cam_dir);
 	cam_up.normalize();
-}
+}*/
 
 void GLWidget::show_cam() const
 {
-	qDebug() << " cam position:" << cam_pos;
+/*	qDebug() << " cam position:" << cam_pos;
 	qDebug() << "  cam look_at:" << cam_lat;
 	qDebug() << "cam direction:" << cam_dir;
 	qDebug() << "       cam up:" << cam_up;
 	qDebug() << "    cam right:" << cam_right;
 	qDebug() << "    cam angle:" << cam_han;
 	qDebug() << "    m_view:" << m_view;
-	qDebug() << "    m_proj:" << m_proj;
+	qDebug() << "    m_proj:" << m_proj;*/
 }
 
 template <class _T>
@@ -246,7 +251,7 @@ GLuint add_item(QVector<_T>& v, const _T i)
 #define COLOR_BRIGHT_BLUE QVector4D(0, 0, 1, 0)
 #define COLOR_BLUE QVector4D(0, 0, 0.5, 0)
 
-void GLWidget::initializeAxis()
+void GLWidget::getAxis()
 {
 	if (!m_scene->cfg()->show_axis()) {
 		return;
@@ -516,8 +521,8 @@ void GLWidget::paintGL()
 	m_prg_a_pos_a_col->bind();
 	// draw axis
 	if (m_scene->cfg()->show_axis()) {
-		m_prg_a_pos_a_col->setUniformValue("u_mp", m_proj);
-		m_prg_a_pos_a_col->setUniformValue("u_mv", m_view);
+		m_prg_a_pos_a_col->setUniformValue("u_mp", m_camera.projection());
+		m_prg_a_pos_a_col->setUniformValue("u_mv", m_camera.view());
 		m_prg_a_pos_a_col->setUniformValue("u_mm", m_mm1);
 		drawAxis();
 	}
@@ -525,9 +530,9 @@ void GLWidget::paintGL()
 
 	// draw scene
 	m_prg_u_col_a_pos->bind();
-	generate_m_view();
-	m_prg_u_col_a_pos->setUniformValue("u_mp", m_proj);
-	m_prg_u_col_a_pos->setUniformValue("u_mv", m_view);
+	//~ generate_m_view();
+	m_prg_u_col_a_pos->setUniformValue("u_mp", m_camera.projection());
+	m_prg_u_col_a_pos->setUniformValue("u_mv", m_camera.view());
 	drawGeometry();
 	m_prg_u_col_a_pos->release();
 }
@@ -542,8 +547,8 @@ void GLWidget::resizeGL(int w, int h)
 
 	m_funcs->glViewport(0, 0, w, h);
 
-	cam_ratio = GLfloat(w) / h;
-	qDebug() << "cam_ratio =" << cam_ratio;
+	/*cam_ratio = GLfloat(w) / h;
+	qDebug() << "cam_ratio =" << cam_ratio;*/
 }
 
 /*static void qNormalizeAngle(int &angle)
@@ -584,9 +589,19 @@ void GLWidget::setZRotation(int angle)
 	}
 }*/
 
-void GLWidget::mousePressEvent(QMouseEvent *e)
+void GLWidget::keyPressEvent(QKeyEvent *event)
 {
-	m_lastPos = e->pos();
+	qDebug() << "GLWidget::keyPressEvent(" << *event << ")";
+    if (event->key() == Qt::Key_Escape) {
+        close();
+    }
+    QWidget::keyPressEvent(event);
+}
+
+void GLWidget::mousePressEvent(QMouseEvent *event)
+{
+	qDebug() << "GLWidget::mousePressEvent(" << *event << ")";
+/*	m_lastPos = e->pos();
 	//~ qDebug() << "e->button() =" << e->button();
 	//~ qDebug() << "e->buttons() =" << e->buttons();
 	//~ update();
@@ -598,12 +613,13 @@ void GLWidget::mousePressEvent(QMouseEvent *e)
 		m_rmb_pressed = true;
 	} else {
 		qDebug() << "Strange mouse button pressed:" << e->button();
-	}
+	}*/
 }
 
-void GLWidget::mouseReleaseEvent(QMouseEvent *e)
+void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-	if (e->button() == Qt::LeftButton) {
+	qDebug() << "GLWidget::mouseReleaseEvent(" << *event << ")";
+	/*if (e->button() == Qt::LeftButton) {
 		m_lmb_pressed = false;
 	} else if (e->button() == Qt::MiddleButton) {
 		m_mmb_pressed = false;
@@ -611,27 +627,13 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e)
 		m_rmb_pressed = false;
 	} else {
 		qDebug() << "Strange mouse button released:" << e->button();
-	}
-	//~ // Mouse release position - mouse press position
-	//~ QVector2D diff = QVector2D(e->localPos()) - mousePressPosition;
-
-	//~ // Rotation axis is perpendicular to the mouse position difference
-	//~ // vector
-	//~ QVector3D n = QVector3D(diff.y(), diff.x(), 0.0).normalized();
-
-	//~ // Accelerate angular speed relative to the length of the mouse sweep
-	//~ qreal acc = diff.length() / 100.0;
-
-	//~ // Calculate new rotation axis as weighted sum
-	//~ rotationAxis = (rotationAxis * angularSpeed + n * acc).normalized();
-
-	//~ // Increase angular speed
-	//~ angularSpeed += acc;
+	}*/
 }
 
-void GLWidget::mouseMoveEvent(QMouseEvent *e)
+void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	if (m_lmb_pressed) {
+	qDebug() << "GLWidget::mouseMoveEvent(" << *event << ")";
+	/*if (m_lmb_pressed) {
 		int dx = e->x() - m_lastPos.x();
 		int dy = e->y() - m_lastPos.y();
 		//~ qDebug() << "m_lastPos =" << m_lastPos;
@@ -659,21 +661,18 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e)
 		m_lastPos = e->pos();
 		update();
 	} else {
-	}
+	}*/
 }
 
-void GLWidget::wheelEvent(QWheelEvent *e)
+void GLWidget::wheelEvent(QWheelEvent *event)
 {
-	//~ e->delta() > 0 ? scale += scale*0.1f : scale -= scale*0.1f;
-	//~ draw();
-	//~ qDebug() << "e->delta() =" << e->delta();
-	//~ qDebug() << "e->angleDelta() =" << e->angleDelta();
-	if (e->delta() > 0) {
+	qDebug() << "GLWidget::wheelEvent(" << *event << ")";
+	/*if (e->delta() > 0) {
 		cam_pos = cam_pos + cam_dir;
 		cam_lat = cam_pos + cam_dir;
 	} else {
 		cam_pos = cam_pos - cam_dir;
 		cam_lat = cam_pos + cam_dir;
 	}
-	update();
+	update();*/
 }

@@ -1,10 +1,15 @@
+// -*- coding: utf-8 -*-
+/** @file camera.cpp
+ ** camera and related
+ **/
+
 #include "camera.h"
 
-#include <QtGui/QCursor>
-#include <QtGui/QKeyEvent>
-#include <QtGui/QWindow>
+#include <QCursor>
+#include <QKeyEvent>
+#include <QWindow>
 
-#include <QtCore/QDebug>
+#include <QDebug>
 #include <QtMath>
 
 #include <cmath>
@@ -17,26 +22,27 @@ constexpr float radians(float angle)
 Camera::Camera(QObjectPointer parent)
     : QObject(parent)
 {
-    m_timer = startTimer(25);
+    //~ m_timer = startTimer(25);
 }
 
 void Camera::setWindow(QWindowPointer window)
 {
+	//~ qDebug() << "Camera::setWindow(" << window << ")";
     if (window == m_window) {
         return;
     }
 
     if (m_window) {
-        m_window->setCursor(QCursor());
+        //~ m_window->setCursor(QCursor());
         m_window->removeEventFilter(this);
     }
 
     m_window = window;
 
     if (m_window) {
-        QCursor cursor;
-        cursor.setShape(Qt::BlankCursor);
-        m_window->setCursor(cursor);
+        //~ QCursor cursor;
+        //~ cursor.setShape(Qt::BlankCursor);
+        //~ m_window->setCursor(cursor);
         m_window->installEventFilter(this);
         updateMatrixes();
     }
@@ -142,7 +148,7 @@ void Camera::focusInEvent(QFocusEvent *event)
 {
     Q_UNUSED(event);
     if (m_window) {
-        m_window->setMouseGrabEnabled(true);
+        //~ m_window->setMouseGrabEnabled(true);
         m_blockMove = true;
         QCursor::setPos(m_window->geometry().center());
     }
@@ -152,7 +158,7 @@ void Camera::focusOutEvent(QFocusEvent *event)
 {
     Q_UNUSED(event);
     if (m_window) {
-        m_window->setMouseGrabEnabled(false);
+        //~ m_window->setMouseGrabEnabled(false);
     }
 }
 
@@ -223,5 +229,5 @@ void Camera::updateMatrixes()
     }
 
     m_view.lookAt(m_cameraPos, m_cameraPos + m_cameraFront, {0.0f, 1.0f, 0.0f});
-    m_projection.perspective(m_fov, 1.0 * m_window->width() / m_window->height(), 0.1, 100.0);
+    m_projection.perspective(m_fov, 1.0f * m_window->width() / m_window->height(), 0.1f, 100.0f);
 }
