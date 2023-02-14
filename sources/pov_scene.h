@@ -32,7 +32,7 @@ public:
 	QString filename() const {return m_scenefilename;}
 	void setup_perspective(float cam_ratio);
 	void setup_ortho();
-	void getGeometry(QVector<QMatrix4x4*>& m_mv
+	void getGeometry(QVector<QMatrix4x4*>& m_mm
 	, QVector<QVector4D*>& m_mc
 	, QVector<QOpenGLBuffer*>& m_vbos
 	, QVector<QOpenGLBuffer*>& m_ibos);

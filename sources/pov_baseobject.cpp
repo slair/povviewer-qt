@@ -67,6 +67,47 @@ void pov_BaseObject::getBBOX(QVector<QVector4D*>& m_mc
 	QOpenGLBuffer* ibo = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
 	m_ibos << ibo;
 	qDebug() << "ibo:" << ibo;
+#define A m_bbox[0]
+#define B m_bbox[1]
+	QVector3D _vertices[] = {
+		A,
+		QVector3D(A.x(), A.y(), B.z()),
+		QVector3D(B.x(), A.y(), B.z()),
+		QVector3D(B.x(), A.y(), A.z()),
+		QVector3D(B.x(), B.y(), A.z()),
+		B,
+		QVector3D(A.x(), B.y(), B.z()),
+		QVector3D(A.x(), B.y(), A.z())
+	};
+#undef B
+#undef A
+	GLuint _indices[] = {
+		0, 1,
+		1, 2,
+		2, 3,
+		3, 0,
+		3, 4,
+		4, 5,
+		5, 6,
+		6, 7,
+		7, 4,
+		0, 7,
+		1, 6,
+		2, 5
+	};
+
+	qDebug() << "sizeof(_vertices) =" << sizeof(_vertices);
+	vbo->create();
+	vbo->bind();
+	vbo->setUsagePattern(QOpenGLBuffer::StaticDraw);
+	vbo->allocate(_vertices, sizeof(_vertices));
+
+	qDebug() << "sizeof(_indices) =" << sizeof(_indices);
+	ibo->create();
+	ibo->bind();
+	ibo->setUsagePattern(QOpenGLBuffer::StaticDraw);
+	ibo->allocate(_indices, sizeof(_indices));
+
 }
 int pov_BaseObject::read(QDataStream& ds)
 {

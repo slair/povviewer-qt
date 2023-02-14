@@ -14,10 +14,14 @@ const char* const VS_a_pos_a_col =
 	"attribute vec4 a_col;\n"
 	"varying vec3 v_pos;\n"
 	"varying vec4 v_col;\n"
+	"uniform mat4 u_mp;\n"
+	"uniform mat4 u_mv;\n"
+	"uniform mat4 u_mm;\n"
 	"void main() {\n"
 	"   v_pos = a_pos;\n"
 	"   v_col = a_col;\n"
-	"   gl_Position = vec4(a_pos, 1.0);\n"
+	"	vec4 vertex4 = u_mp * u_mv * u_mm * vec4(a_pos, 1.0);\n"
+	"   gl_Position = vertex4 * u_mp;\n"
 	"}\n";
 
 const char *const FS_a_pos_a_col =
@@ -30,17 +34,16 @@ const char *const FS_a_pos_a_col =
 
 const char* const VS_u_col_a_pos =
 	"attribute vec3 a_pos;\n"
-	//~ "attribute vec4 a_col;\n"
 	"varying vec3 v_pos;\n"
-	//~ "varying vec4 v_col;\n"
+	"uniform mat4 u_mp;\n"
+	"uniform mat4 u_mv;\n"
+	"uniform mat4 u_mm;\n"
 	"void main() {\n"
 	"   v_pos = a_pos;\n"
-	//~ "   v_col = a_col;\n"
-	"   gl_Position = vec4(a_pos, 1.0);\n"
+	"   gl_Position = u_mp * u_mv * u_mm * vec4(a_pos, 1.0);\n"
 	"}\n";
 
 const char *const FS_u_col_a_pos =
-	//~ "precision mediump float;\n"
 	"uniform vec4 u_col;\n"
 	"varying vec3 v_pos;\n"
 	"void main() {\n"
@@ -126,7 +129,10 @@ void GLWidget::initializeGL()
 		return;
 	}
 	m_funcs->initializeOpenGLFunctions();
-	qDebug() << "GL_VERSION:" << *m_funcs->glGetString(GL_VERSION);
+	qInfo() << "OpenGL version:"
+			<< reinterpret_cast<const char *>(
+				m_funcs->glGetString(GL_VERSION));
+	//~ qDebug() << "GL_VERSION:" << *m_funcs->glGetString(GL_VERSION);
 
 	m_funcs->glClearColor(m_scene->cfg()->bg_color()[0]
 						  , m_scene->cfg()->bg_color()[1]
@@ -145,14 +151,78 @@ void GLWidget::initializeGL()
 	m_funcs->glDepthFunc(GL_LEQUAL);
 
 	initializeShaders();
+
 	initializeAxis();
 	getGeometry();
 
+	initializeTextures();
+	initializeMatrices();
+
 	connect(context(), &QOpenGLContext::aboutToBeDestroyed, this
 			, &GLWidget::cleanup);
+}
 
-	m_prg_a_pos_a_col->bind();
-	m_prg_a_pos_a_col->release();
+void GLWidget::initializeMatrices()
+{
+	m_mm1.setToIdentity();
+
+	cam_han = m_scene->cfg()->cam_angle();	// horizontal angle
+	cam_pos = m_scene->cfg()->cam_pos();	// location
+	cam_lat = m_scene->cfg()->cam_tgt();	// look_at
+	cam_up = QVector3D(0, 1, 0);			// up
+	cam_dir = cam_lat - cam_pos;			// direction
+	cam_dir.normalize();
+	fix_right();
+	fix_up();
+	cam_han = 63.5f;
+	cam_znear = 0.01f;
+	cam_zfar = 2048.0f;
+	generate_m_view();
+
+	m_proj.setToIdentity();
+	m_proj.perspective(cam_han / cam_ratio, cam_ratio, cam_znear, cam_zfar);
+}
+
+void GLWidget::initializeTextures() {}
+
+void GLWidget::generate_m_view()
+{
+	m_view.setToIdentity();
+	//~ m_view.scale(-1, 1, 1);
+	//~ m_view.translate(cam_pos);
+	//~ m_view.rotate(180, cam_up);
+	m_view.lookAt(cam_pos, cam_lat, cam_up);
+	show_cam();
+}
+
+void GLWidget::fix_right()
+{
+	cam_right = QVector3D::crossProduct(cam_dir, cam_up);
+	cam_right.normalize();
+}
+
+void GLWidget::fix_dir()
+{
+	cam_dir = QVector3D::crossProduct(cam_up, cam_right);
+	cam_dir.normalize();
+}
+
+void GLWidget::fix_up()
+{
+	cam_up = QVector3D::crossProduct(cam_right, cam_dir);
+	cam_up.normalize();
+}
+
+void GLWidget::show_cam() const
+{
+	qDebug() << " cam position:" << cam_pos;
+	qDebug() << "  cam look_at:" << cam_lat;
+	qDebug() << "cam direction:" << cam_dir;
+	qDebug() << "       cam up:" << cam_up;
+	qDebug() << "    cam right:" << cam_right;
+	qDebug() << "    cam angle:" << cam_han;
+	qDebug() << "    m_view:" << m_view;
+	qDebug() << "    m_proj:" << m_proj;
 }
 
 template <class _T>
@@ -260,16 +330,16 @@ void GLWidget::clearBuffers()
 	m_ibos.clear();
 	qDebug() << "m_ibos.clear()";
 
-	qDebug() << "m_mv.size() =" << m_mv.size();
-	for(int i = 0; i < m_mv.size(); i++) {
-		if (m_mv[i] != nullptr) {
-			qDebug() << m_mv[i];
-			delete m_mv[i];
-			m_mv[i] = nullptr;
+	qDebug() << "m_mm.size() =" << m_mm.size();
+	for(int i = 0; i < m_mm.size(); i++) {
+		if (m_mm[i] != nullptr) {
+			qDebug() << "m_mm[" << i << "] = " << m_mm[i];
+			delete m_mm[i];
+			m_mm[i] = nullptr;
 		}
 	}
-	m_mv.clear();
-	qDebug() << "m_mv.clear()";
+	m_mm.clear();
+	qDebug() << "m_mm.clear()";
 
 	qDebug() << "m_mc.size() = " << m_mc.size();
 	for(int i = 0; i < m_mc.size(); i++) {
@@ -286,7 +356,9 @@ void GLWidget::getGeometry()
 {
 	clearBuffers();
 	// todo:  17. fill m_vbos and m_ibos with data from m_scene
-	m_scene->getGeometry(m_mv, m_mc, m_vbos, m_ibos);
+	m_vao_scene.create();
+	m_vao_scene.bind();
+	m_scene->getGeometry(m_mm, m_mc, m_vbos, m_ibos);
 }
 
 /*void GLWidget::initializeTriangle()
@@ -333,25 +405,37 @@ void GLWidget::getGeometry()
 
 void GLWidget::initializeShaders()
 {
-	//~ m_prg_a_pos_a_col = std::make_unique<QOpenGLShaderProgram>();
 	m_prg_a_pos_a_col = new QOpenGLShaderProgram();
-	m_prg_a_pos_a_col->addShaderFromSourceCode(QOpenGLShader::Vertex
+	bool ok;
+	ok = m_prg_a_pos_a_col->addShaderFromSourceCode(QOpenGLShader::Vertex
 			, VS_a_pos_a_col);
-	m_prg_a_pos_a_col->addShaderFromSourceCode(QOpenGLShader::Fragment
-			, FS_a_pos_a_col);
-	m_prg_a_pos_a_col->link();
+	if (!ok) qWarning() << "m_prg_a_pos_a_col";
 
-	m_prg_u_col_a_pos = new QOpenGLShaderProgram();
-	m_prg_u_col_a_pos->addShaderFromSourceCode(QOpenGLShader::Vertex
+	ok = m_prg_a_pos_a_col->addShaderFromSourceCode(QOpenGLShader::Fragment
+			, FS_a_pos_a_col);
+	if (!ok) qWarning() << "m_prg_a_pos_a_col";
+
+	ok = m_prg_a_pos_a_col->link();
+	if (!ok) qWarning() << "m_prg_a_pos_a_col";
+
+	ok = m_prg_u_col_a_pos = new QOpenGLShaderProgram();
+	if (!ok) qWarning() << "m_prg_u_col_a_pos";
+
+	ok = m_prg_u_col_a_pos->addShaderFromSourceCode(QOpenGLShader::Vertex
 			, VS_u_col_a_pos);
-	m_prg_u_col_a_pos->addShaderFromSourceCode(QOpenGLShader::Fragment
+	if (!ok) qWarning() << "m_prg_u_col_a_pos";
+
+	ok = m_prg_u_col_a_pos->addShaderFromSourceCode(QOpenGLShader::Fragment
 			, FS_u_col_a_pos);
-	m_prg_u_col_a_pos->link();
+	if (!ok) qWarning() << "m_prg_u_col_a_pos";
+
+	ok = m_prg_u_col_a_pos->link();
+	if (!ok) qWarning() << "m_prg_u_col_a_pos";
 }
 
 void GLWidget::drawAxis()
 {
-	m_prg_a_pos_a_col->bind();
+	//~ m_prg_a_pos_a_col->bind();
 	m_vao_axis.bind();
 	m_axis_points.bind();
 	m_axis_indices.bind();
@@ -371,61 +455,95 @@ void GLWidget::drawAxis()
 	m_axis_indices.release();
 	m_axis_points.release();
 	m_vao_axis.release();
-	m_prg_a_pos_a_col->release();
+	//~ m_prg_a_pos_a_col->release();
 }
 
 void GLWidget::drawGeometry()
 {
+	//~ makeCurrent();
+	qDebug() << "GLWidget::drawGeometry()";
+	if (!m_funcs) {
+		qDebug() << "m_funcs =" << m_funcs;
+		return;
+	}
+	quintptr offset = 0;
+	//~ m_prg_u_col_a_pos->bind();
+	m_vao_scene.bind();
+	//~ qDebug() << "m_vao_scene.objectId() =" << m_vao_scene.objectId();
+
+	for(int i=0; i < m_vbos.size(); i++) {
+		m_vbos[i]->bind();
+		m_ibos[i]->bind();
+
+		m_prg_u_col_a_pos->setUniformValue("u_mm", *m_mm[i]);
+		//~ int col = m_prg_u_col_a_pos->uniformLocation("u_col");
+		// fixme: one color
+		m_prg_u_col_a_pos->setUniformValue("u_col", *m_mc[i]);
+
+		//~ int pos = m_prg_u_col_a_pos->attributeLocation("a_pos");
+		//~ m_prg_u_col_a_pos->enableAttributeArray(pos);
+		m_prg_u_col_a_pos->enableAttributeArray("a_pos");
+		m_prg_u_col_a_pos->setAttributeBuffer("a_pos", GL_FLOAT, offset, 3
+											  , 3 * sizeof(GLfloat));
+		//~ qDebug() << "m_ibos[i]->size() = " << m_ibos[i]->size();
+		//~ qDebug() << "m_ibos has"
+		//~ << (m_ibos[i]->size() / sizeof(GLuint)) / 2 << "lines";
+		m_funcs->glDrawElements(GL_LINES
+								, (m_ibos[i]->size() / sizeof(GLuint)) / 2
+								, GL_UNSIGNED_INT, nullptr);
+		qDebug() << "m_funcs->glGetError() =" << m_funcs->glGetError();
+
+		m_ibos[i]->release();
+		m_vbos[i]->release();
+	}
+	m_vao_scene.release();
+	qDebug() << "*m_mm[" << 0 << "] =" << *m_mm[0];
+	//~ m_prg_u_col_a_pos->release();
 }
 
 void GLWidget::paintGL()
 {
 	qDebug() << "GLWidget::paintGL()";
 
-	if (!m_funcs)
+	if (!m_funcs) {
+		qDebug() << "m_funcs =" << m_funcs;
 		return;
+	}
 
 	m_funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_funcs->glDisable(GL_LIGHTING);
 
 	m_prg_a_pos_a_col->bind();
-
 	// draw axis
 	if (m_scene->cfg()->show_axis()) {
+		m_prg_a_pos_a_col->setUniformValue("u_mp", m_proj);
+		m_prg_a_pos_a_col->setUniformValue("u_mv", m_view);
+		m_prg_a_pos_a_col->setUniformValue("u_mm", m_mm1);
 		drawAxis();
 	}
+	m_prg_a_pos_a_col->release();
 
 	// draw scene
+	m_prg_u_col_a_pos->bind();
+	generate_m_view();
+	m_prg_u_col_a_pos->setUniformValue("u_mp", m_proj);
+	m_prg_u_col_a_pos->setUniformValue("u_mv", m_view);
 	drawGeometry();
-
-	/*// draw triangle
-	//~ qDebug() << "draw triangle";
-	m_vao_triangle.bind();
-	m_triangle_points.bind();
-	m_triangle_indices.bind();
-	offset = 0;
-	pos = m_prg_a_pos_a_col->attributeLocation("a_vertex");
-	m_prg_a_pos_a_col->enableAttributeArray(pos);
-	m_prg_a_pos_a_col->setAttributeBuffer(pos, GL_FLOAT, offset, 3
-										   , sizeof(PosCol));
-	offset += sizeof(QVector3D);
-	col = m_prg_a_pos_a_col->attributeLocation("a_color");
-	m_prg_a_pos_a_col->enableAttributeArray(col);
-	m_prg_a_pos_a_col->setAttributeBuffer(col, GL_FLOAT, offset, 4
-										   ,sizeof(PosCol));
-	m_funcs->glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
-	m_prg_a_pos_a_col->disableAttributeArray(col);
-	m_prg_a_pos_a_col->disableAttributeArray(pos);
-	m_prg_a_pos_a_col->release();*/
+	m_prg_u_col_a_pos->release();
 }
 
 void GLWidget::resizeGL(int w, int h)
 {
 	qDebug() << "GLWidget::resizeGL(int" << w << ", int" << h << ")";
-	if (!m_funcs)
+	if (!m_funcs) {
+		qDebug() << "m_funcs =" << m_funcs;
 		return;
+	}
 
 	m_funcs->glViewport(0, 0, w, h);
+
+	cam_ratio = GLfloat(w) / h;
+	qDebug() << "cam_ratio =" << cam_ratio;
 }
 
 /*static void qNormalizeAngle(int &angle)
@@ -464,24 +582,98 @@ void GLWidget::setZRotation(int angle)
 		emit zRotationChanged(angle);
 		update();
 	}
-}
-
-void GLWidget::mousePressEvent(QMouseEvent *event)
-{
-	m_lastPos = event->pos();
-}
-
-void GLWidget::mouseMoveEvent(QMouseEvent *event)
-{
-	int dx = event->x() - m_lastPos.x();
-	int dy = event->y() - m_lastPos.y();
-
-	if (event->buttons() & Qt::LeftButton) {
-		setXRotation(m_xRot + 8 * dy);
-		setYRotation(m_yRot + 8 * dx);
-	} else if (event->buttons() & Qt::RightButton) {
-		setXRotation(m_xRot + 8 * dy);
-		setZRotation(m_zRot + 8 * dx);
-	}
-	m_lastPos = event->pos();
 }*/
+
+void GLWidget::mousePressEvent(QMouseEvent *e)
+{
+	m_lastPos = e->pos();
+	//~ qDebug() << "e->button() =" << e->button();
+	//~ qDebug() << "e->buttons() =" << e->buttons();
+	//~ update();
+	if (e->button() == Qt::LeftButton) {
+		m_lmb_pressed = true;
+	} else if (e->button() == Qt::MiddleButton) {
+		m_mmb_pressed = true;
+	} else if (e->button() == Qt::RightButton) {
+		m_rmb_pressed = true;
+	} else {
+		qDebug() << "Strange mouse button pressed:" << e->button();
+	}
+}
+
+void GLWidget::mouseReleaseEvent(QMouseEvent *e)
+{
+	if (e->button() == Qt::LeftButton) {
+		m_lmb_pressed = false;
+	} else if (e->button() == Qt::MiddleButton) {
+		m_mmb_pressed = false;
+	} else if (e->button() == Qt::RightButton) {
+		m_rmb_pressed = false;
+	} else {
+		qDebug() << "Strange mouse button released:" << e->button();
+	}
+	//~ // Mouse release position - mouse press position
+	//~ QVector2D diff = QVector2D(e->localPos()) - mousePressPosition;
+
+	//~ // Rotation axis is perpendicular to the mouse position difference
+	//~ // vector
+	//~ QVector3D n = QVector3D(diff.y(), diff.x(), 0.0).normalized();
+
+	//~ // Accelerate angular speed relative to the length of the mouse sweep
+	//~ qreal acc = diff.length() / 100.0;
+
+	//~ // Calculate new rotation axis as weighted sum
+	//~ rotationAxis = (rotationAxis * angularSpeed + n * acc).normalized();
+
+	//~ // Increase angular speed
+	//~ angularSpeed += acc;
+}
+
+void GLWidget::mouseMoveEvent(QMouseEvent *e)
+{
+	if (m_lmb_pressed) {
+		int dx = e->x() - m_lastPos.x();
+		int dy = e->y() - m_lastPos.y();
+		//~ qDebug() << "m_lastPos =" << m_lastPos;
+		qDebug() << "dx, dy =" << dx << "," << dy;
+
+		// rotate around right
+		QMatrix4x4 _tmp = QMatrix4x4();
+		_tmp.setToIdentity();
+		_tmp.rotate(m_MouseSens * dy, cam_right);
+		QVector4D _dir = QVector4D(cam_dir, 1);
+		_dir = _dir * _tmp;
+
+		cam_dir = QVector3D(_dir);
+		cam_dir.normalize();
+		fix_up();
+
+		cam_up = QVector3D(0, 1, 0);
+		fix_right();
+		fix_up();
+
+		cam_lat = cam_pos + cam_dir;
+		//~ cam_lat += QVector3D(m_MouseSens * dx, 0, 0);
+		//~ cam_lat += QVector3D(0, m_MouseSens * dy, 0);
+
+		m_lastPos = e->pos();
+		update();
+	} else {
+	}
+}
+
+void GLWidget::wheelEvent(QWheelEvent *e)
+{
+	//~ e->delta() > 0 ? scale += scale*0.1f : scale -= scale*0.1f;
+	//~ draw();
+	//~ qDebug() << "e->delta() =" << e->delta();
+	//~ qDebug() << "e->angleDelta() =" << e->angleDelta();
+	if (e->delta() > 0) {
+		cam_pos = cam_pos + cam_dir;
+		cam_lat = cam_pos + cam_dir;
+	} else {
+		cam_pos = cam_pos - cam_dir;
+		cam_lat = cam_pos + cam_dir;
+	}
+	update();
+}

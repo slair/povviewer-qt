@@ -32,19 +32,19 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 	const char* msg_type;
 	switch (type) {
 	case QtDebugMsg:
-		msg_type = "   DEBUG";
+		msg_type = "    DEBUG";
 		break;
 	case QtInfoMsg:
-		msg_type = "    INFO";
+		msg_type = "     INFO";
 		break;
 	case QtWarningMsg:
-		msg_type = " WARNING";
+		msg_type = "!WARNING";
 		break;
 	case QtCriticalMsg:
-		msg_type = "CRITICAL";
+		msg_type = "!CRITICAL";
 		break;
 	case QtFatalMsg:
-		msg_type = "   FATAL";
+		msg_type = "!   FATAL";
 		break;
 	}
 	if (localMsg != "QOpenGLFramebufferObject: Unsupported "

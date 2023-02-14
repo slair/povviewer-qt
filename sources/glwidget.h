@@ -80,8 +80,10 @@ protected:
 	void initializeGL() override;
 	void paintGL() override;
 	void resizeGL(int width, int height) override;
-	//~ void mousePressEvent(QMouseEvent *event) override;
-	//~ void mouseMoveEvent(QMouseEvent *event) override;
+	void mousePressEvent(QMouseEvent *e) override;
+	void mouseMoveEvent(QMouseEvent *e) override;
+	void mouseReleaseEvent(QMouseEvent *e) override;
+	void wheelEvent(QWheelEvent *e) override;
 
 private:
 	pov_Scene* m_scene = nullptr;
@@ -93,20 +95,42 @@ private:
 	void getGeometry();		// fill m_vbos and m_ibos with data from m_scene
 	void drawGeometry();
 	void initializeShaders();
+	void initializeTextures();
+	void initializeMatrices();
+	void generate_m_view();
 	void clearBuffers();
 
 	QOpenGLBuffer m_axis_points {QOpenGLBuffer::VertexBuffer};
 	QOpenGLBuffer m_axis_indices {QOpenGLBuffer::IndexBuffer};
 	QOpenGLVertexArrayObject m_vao_axis;
 
-	//~ QOpenGLBuffer m_triangle_points {QOpenGLBuffer::VertexBuffer};
-	//~ QOpenGLBuffer m_triangle_indices {QOpenGLBuffer::IndexBuffer};
-	//~ QOpenGLVertexArrayObject m_vao_triangle;
+	QVector3D cam_pos;		// location
+	QVector3D cam_lat;		// look_at
+	QVector3D cam_up;		// up
+	QVector3D cam_right;	// right
+	QVector3D cam_dir;		// direction
+	float cam_han;		// horizontal angle
+	float cam_znear;
+	float cam_zfar;
+	float cam_ratio;
+
+	void fix_right();
+	void fix_up();
+	void fix_dir();
+	void show_cam() const;
 
 	QMatrix4x4 m_proj;
 	QMatrix4x4 m_view;
+	QMatrix4x4 m_mm1;
 
-	QVector<QMatrix4x4*> m_mv;		// modelview matrices
+	QPoint m_lastPos;
+	bool m_lmb_pressed = false;
+	bool m_mmb_pressed = false;
+	bool m_rmb_pressed = false;
+	float m_MouseSens = 0.1f;
+
+	QOpenGLVertexArrayObject m_vao_scene;
+	QVector<QMatrix4x4*> m_mm;		// model matrices
 	QVector<QOpenGLBuffer*> m_vbos;	// VertexBuffers
 	QVector<QOpenGLBuffer*> m_ibos;	// IndexBuffers
 	QVector<QVector4D*> m_mc;		// models colors
@@ -116,7 +140,6 @@ private:
 	//~ int m_xRot = 0;
 	//~ int m_yRot = 0;
 	//~ int m_zRot = 0;
-	//~ QPoint m_lastPos;
 	//~ BaseObj m_logo;
 	//~ QOpenGLVertexArrayObject m_vao;
 	//~ QOpenGLBuffer m_logoVbo;

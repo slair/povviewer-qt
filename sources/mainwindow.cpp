@@ -37,3 +37,11 @@ MainWindow::~MainWindow()
 	m_scene->cfg()->set_window_height(geometry().height());
 	qDebug() << "MainWindow deleted";
 }
+
+void MainWindow::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Escape)
+        close();
+    else
+        QWidget::keyPressEvent(e);
+}

@@ -60,20 +60,20 @@ QDebug operator << (QDebug d, const pov_Scene& scene)
 	return d;
 }
 
-void pov_Scene::getGeometry(QVector<QMatrix4x4*>& m_mv
+void pov_Scene::getGeometry(QVector<QMatrix4x4*>& m_mm
 							, QVector<QVector4D*>& m_mc
 							, QVector<QOpenGLBuffer*>& m_vbos
 							, QVector<QOpenGLBuffer*>& m_ibos)
 {
-	qDebug() << "void pov_Scene::getGeometry(" << m_mv
+	qDebug() << "void pov_Scene::getGeometry(" << m_mm
 			 << "," << m_mc << "," << m_vbos << "," << m_ibos << ")";
 
 	if (m_cfg->show_bbox()) {
 		for(int i = 0; i < m_objects.size(); i++) {
-			QMatrix4x4* mv = new QMatrix4x4();
-			mv->setToIdentity();	// fixme: one matrix for all bboxes
-			qDebug() << mv;
-			m_mv << mv;
+			QMatrix4x4* mm = new QMatrix4x4();
+			mm->setToIdentity();	// fixme: one matrix for all bboxes
+			qDebug() << mm;
+			m_mm << mm;
 			m_objects[i]->getBBOX(m_mc, m_vbos, m_ibos);
 		}
 	}
