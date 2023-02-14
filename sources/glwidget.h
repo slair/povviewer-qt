@@ -9,13 +9,14 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QOpenGLFunctions_2_0>
+#include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QMatrix4x4>
 
 #include "pov_scene.h"
 
-QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
+//~ QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
 class PosCol {
 public:
@@ -42,7 +43,7 @@ public:
 		return false;
 	};
 
-	friend QDebug operator<<(QDebug d, const PosCol& obj) {
+	friend QDebug operator<<(QDebug d, const PosCol& obj){
 		d << obj.position << "," << obj.color;
 		return d;
 	};

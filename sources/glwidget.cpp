@@ -21,7 +21,7 @@ const char* const VS_a_pos_a_col =
 	"   v_pos = a_pos;\n"
 	"   v_col = a_col;\n"
 	"	vec4 vertex4 = u_mp * u_mv * u_mm * vec4(a_pos, 1.0);\n"
-	"   gl_Position = vertex4 * u_mp;\n"
+	"   gl_Position = vertex4;\n"
 	"}\n";
 
 const char *const FS_a_pos_a_col =
@@ -355,7 +355,7 @@ void GLWidget::clearBuffers()
 void GLWidget::getGeometry()
 {
 	clearBuffers();
-	// todo:  17. fill m_vbos and m_ibos with data from m_scene
+	// done:  17. fill m_vbos and m_ibos with data from m_scene
 	m_vao_scene.create();
 	m_vao_scene.bind();
 	m_scene->getGeometry(m_mm, m_mc, m_vbos, m_ibos);
@@ -440,6 +440,7 @@ void GLWidget::drawAxis()
 	m_axis_points.bind();
 	m_axis_indices.bind();
 
+	// todo: setup attributes
 	quintptr offset = 0;
 	int pos = m_prg_a_pos_a_col->attributeLocation("a_pos");
 	m_prg_a_pos_a_col->enableAttributeArray(pos);
@@ -450,6 +451,11 @@ void GLWidget::drawAxis()
 	m_prg_a_pos_a_col->enableAttributeArray(col);
 	m_prg_a_pos_a_col->setAttributeBuffer(col, GL_FLOAT, offset, 4
 										  ,sizeof(PosCol));
+
+	// done: setup uniforms
+	m_prg_a_pos_a_col->setUniformValue("u_mp", m_proj);
+	m_prg_a_pos_a_col->setUniformValue("u_mv", m_view);
+	m_prg_a_pos_a_col->setUniformValue("u_mm", m_mm1);
 	m_funcs->glDrawElements(GL_LINES, 12, GL_UNSIGNED_INT, nullptr);
 
 	m_axis_indices.release();
@@ -475,11 +481,7 @@ void GLWidget::drawGeometry()
 		m_vbos[i]->bind();
 		m_ibos[i]->bind();
 
-		m_prg_u_col_a_pos->setUniformValue("u_mm", *m_mm[i]);
-		//~ int col = m_prg_u_col_a_pos->uniformLocation("u_col");
-		// fixme: one color
-		m_prg_u_col_a_pos->setUniformValue("u_col", *m_mc[i]);
-
+		// todo: setup attributes
 		//~ int pos = m_prg_u_col_a_pos->attributeLocation("a_pos");
 		//~ m_prg_u_col_a_pos->enableAttributeArray(pos);
 		m_prg_u_col_a_pos->enableAttributeArray("a_pos");
@@ -488,6 +490,16 @@ void GLWidget::drawGeometry()
 		//~ qDebug() << "m_ibos[i]->size() = " << m_ibos[i]->size();
 		//~ qDebug() << "m_ibos has"
 		//~ << (m_ibos[i]->size() / sizeof(GLuint)) / 2 << "lines";
+
+		// todo: setup uniforms
+		m_prg_u_col_a_pos->setUniformValue("u_mm", *m_mm[i]);
+		m_prg_u_col_a_pos->setUniformValue("u_mp", m_proj);
+		generate_m_view();
+		m_prg_u_col_a_pos->setUniformValue("u_mv", m_view);
+		//~ int col = m_prg_u_col_a_pos->uniformLocation("u_col");
+		// fixme: one color
+		m_prg_u_col_a_pos->setUniformValue("u_col", *m_mc[i]);
+
 		m_funcs->glDrawElements(GL_LINES
 								, (m_ibos[i]->size() / sizeof(GLuint)) / 2
 								, GL_UNSIGNED_INT, nullptr);
@@ -516,18 +528,12 @@ void GLWidget::paintGL()
 	m_prg_a_pos_a_col->bind();
 	// draw axis
 	if (m_scene->cfg()->show_axis()) {
-		m_prg_a_pos_a_col->setUniformValue("u_mp", m_proj);
-		m_prg_a_pos_a_col->setUniformValue("u_mv", m_view);
-		m_prg_a_pos_a_col->setUniformValue("u_mm", m_mm1);
 		drawAxis();
 	}
 	m_prg_a_pos_a_col->release();
 
 	// draw scene
 	m_prg_u_col_a_pos->bind();
-	generate_m_view();
-	m_prg_u_col_a_pos->setUniformValue("u_mp", m_proj);
-	m_prg_u_col_a_pos->setUniformValue("u_mv", m_view);
 	drawGeometry();
 	m_prg_u_col_a_pos->release();
 }
