@@ -114,20 +114,20 @@ private:
 	float cam_zfar;
 	float cam_ratio;
 
-	void fix_right();
-	void fix_up();
-	void fix_dir();
-	void show_cam() const;
+	//~ void fix_right();
+	//~ void fix_up();
+	//~ void fix_dir();
+	//~ void show_cam() const;
 
-	QMatrix4x4 m_proj;
-	QMatrix4x4 m_view;
-	QMatrix4x4 m_mm1;
+	//~ QMatrix4x4 m_proj;
+	//~ QMatrix4x4 m_view;
+	//~ QMatrix4x4 m_mm1;
 
-	QPoint m_lastPos;
-	bool m_lmb_pressed = false;
-	bool m_mmb_pressed = false;
-	bool m_rmb_pressed = false;
-	float m_MouseSens = 0.1f;
+	//~ QPoint m_lastPos;
+	//~ bool m_lmb_pressed = false;
+	//~ bool m_mmb_pressed = false;
+	//~ bool m_rmb_pressed = false;
+	//~ float m_MouseSens = 0.1f;
 
 	QOpenGLVertexArrayObject m_vao_scene;
 	QVector<QMatrix4x4*> m_mm;		// model matrices
