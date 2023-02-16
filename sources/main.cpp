@@ -19,6 +19,9 @@
 #include "glwidget.h"
 #include "mainwindow.h"
 
+static QString ATTENTION_CHARS {"-+!><"};
+static QString AC;
+
 #pragma warning(disable : 4100)
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 					 , const QString &msg)
@@ -29,13 +32,19 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 	const char *file = context.file ? context.file : "";
 	const char *function = context.function ? context.function : "";
 #endif
-	const char* msg_type;
+	if (ATTENTION_CHARS.contains(msg[0])) {
+		AC = msg[0];
+		localMsg = msg.right(msg.length() - 1).toLocal8Bit();
+	} else {
+		AC = " ";
+	}
+	QString msg_type;
 	switch (type) {
 	case QtDebugMsg:
-		msg_type = "    DEBUG";
+		msg_type = AC + "   DEBUG";
 		break;
 	case QtInfoMsg:
-		msg_type = "     INFO";
+		msg_type = AC + "    INFO";
 		break;
 	case QtWarningMsg:
 		msg_type = "!WARNING";
@@ -51,9 +60,10 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 		"framebuffer format.") {
 #ifdef DEBUG_CONTEXT
 		fprintf(stderr, "%s:%u: %s\n%s: %s\n\n", file, context.line, function
-				, msg_type, localMsg.constData());
+				, msg_type.toLocal8Bit().constData(), localMsg.constData());
 #else
-		fprintf(stderr, "%s: %s\n", msg_type, localMsg.constData());
+		fprintf(stderr, "%s: %s\n", msg_type.toLocal8Bit().constData()
+				, localMsg.constData());
 #endif
 	}
 }
@@ -169,7 +179,9 @@ int main(int argc, char *argv[])
 
 	// done:   5. create scene object
 	pov_Scene* scene = new pov_Scene(cfg, fi_scene.fileName());
+	qDebug() << "scene really readed";
 	qDebug() << *scene;
+	qDebug() << "scene printed";
 
 	QSurfaceFormat fmt;
 	fmt.setDepthBufferSize(24);

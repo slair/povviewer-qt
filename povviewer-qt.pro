@@ -11,6 +11,7 @@ CONFIG += console
 CONFIG += debug
 
 HEADERS       =	sources/myconfig.h \
+				sources/el_show.h \
 				sources/glwidget.h \
 				sources/mainwindow.h \
 				sources/vec3d.h \
@@ -19,10 +20,11 @@ HEADERS       =	sources/myconfig.h \
 				sources/pov_scene.h \
 				sources/pov_transform.h \
 				sources/pov_baseobject.h \
-				sources/pov_sphere.h \
-				sources/camera.h
+				sources/pov_sphere.h
+				#~ sources/camera.h
 
 SOURCES       =	sources/myconfig.cpp \
+				#~ sources/el_show.cpp \
 				sources/glwidget.cpp \
 				sources/mainwindow.cpp \
 				sources/vec3d.cpp \
@@ -31,8 +33,8 @@ SOURCES       =	sources/myconfig.cpp \
 				sources/pov_scene.cpp \
 				sources/pov_transform.cpp \
 				sources/pov_baseobject.cpp \
-				sources/pov_sphere.cpp \
-				sources/camera.cpp
+				sources/pov_sphere.cpp
+				#~ sources/camera.cpp
 
 QT           += widgets opengl
 

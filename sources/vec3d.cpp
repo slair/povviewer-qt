@@ -85,67 +85,67 @@ void vec3d::gl_clear_color() const
 	//~ return s;
 //~ }
 
-void vec3d::draw_navigator(double size) const
+/*void vec3d::draw_navigator(double size) const
 {
-	//~ glBegin(GL_LINES);
-	//~ // x-axis
-	//~ glColor3f(0.0, 0.0, 0.0);
-	//~ glVertex3d(data[0]-size, data[1], data[2]);
-	//~ glColor3f(1.0, 0.0, 0.0);
-	//~ glVertex3d(data[0]+size, data[1], data[2]);
-	//~ glVertex3d(data[0]+size, data[1], data[2]);
-	//~ glColor3f(0.0, 1.0, 0.0);
-	//~ glVertex3d(data[0], data[1]+size, data[2]);
-	//~ glColor3f(1.0, 0.0, 0.0);
-	//~ glVertex3d(data[0]+size, data[1], data[2]);
-	//~ glColor3f(0.0, 0.0, 1.0);
-	//~ glVertex3d(data[0], data[1], data[2]+size);
-	//~ glColor3f(1.0, 0.0, 0.0);
-	//~ glVertex3d(data[0]+size, data[1], data[2]);
-	//~ glColor3f(0.0, 0.0, 0.0);
-	//~ glVertex3d(data[0], data[1], data[2]-size);
-	//~ glVertex3d(data[0], data[1]-size, data[2]);
-	//~ glColor3f(1.0, 0.0, 0.0);
-	//~ glVertex3d(data[0]+size, data[1], data[2]);
-	//~ // y-axis
-	//~ glColor3f(0.0, 0.0, 0.0);
-	//~ glVertex3d(data[0], data[1]-size, data[2]);
-	//~ glColor3f(0.0, 1.0, 0.0);
-	//~ glVertex3d(data[0], data[1]+size, data[2]);
-	//~ glVertex3d(data[0], data[1]+size, data[2]);
-	//~ glColor3f(0.0, 0.0, 1.0);
-	//~ glVertex3d(data[0], data[1], data[2]+size);
-	//~ glColor3f(0.0, 1.0, 0.0);
-	//~ glVertex3d(data[0], data[1]+size, data[2]);
-	//~ glColor3f(0.0, 0.0, 0.0);
-	//~ glVertex3d(data[0]-size, data[1], data[2]);
-	//~ glColor3f(0.0, 1.0, 0.0);
-	//~ glVertex3d(data[0], data[1]+size, data[2]);
-	//~ glColor3f(0.0, 0.0, 0.0);
-	//~ glVertex3d(data[0], data[1], data[2]-size);
-	//~ // z-axis
-	//~ glColor3f(0.0, 0.0, 0.0);
-	//~ glVertex3d(data[0], data[1], data[2]-size);
-	//~ glColor3f(0.0, 0.0, 1.0);
-	//~ glVertex3d(data[0], data[1], data[2]+size);
-	//~ glColor3f(0.0, 0.0, 1.0);
-	//~ glVertex3d(data[0], data[1], data[2]+size);
-	//~ glColor3f(0.0, 0.0, 0.0);
-	//~ glVertex3d(data[0], data[1]-size, data[2]);
-	//~ glColor3f(0.0, 0.0, 1.0);
-	//~ glVertex3d(data[0], data[1], data[2]+size);
-	//~ glColor3f(0.0, 0.0, 0.0);
-	//~ glVertex3d(data[0]-size, data[1], data[2]);
-	//~ // black-axis
-	//~ glColor3f(0.0, 0.0, 0.0);
-	//~ glVertex3d(data[0]-size, data[1], data[2]);
-	//~ glVertex3d(data[0], data[1]-size, data[2]);
-	//~ glVertex3d(data[0], data[1], data[2]-size);
-	//~ glVertex3d(data[0], data[1]-size, data[2]);
-	//~ glVertex3d(data[0], data[1], data[2]-size);
-	//~ glVertex3d(data[0]-size, data[1], data[2]);
-	//~ glEnd();
-}
+	glBegin(GL_LINES);
+	// x-axis
+	glColor3f(0.0, 0.0, 0.0);
+	glVertex3d(data[0]-size, data[1], data[2]);
+	glColor3f(1.0, 0.0, 0.0);
+	glVertex3d(data[0]+size, data[1], data[2]);
+	glVertex3d(data[0]+size, data[1], data[2]);
+	glColor3f(0.0, 1.0, 0.0);
+	glVertex3d(data[0], data[1]+size, data[2]);
+	glColor3f(1.0, 0.0, 0.0);
+	glVertex3d(data[0]+size, data[1], data[2]);
+	glColor3f(0.0, 0.0, 1.0);
+	glVertex3d(data[0], data[1], data[2]+size);
+	glColor3f(1.0, 0.0, 0.0);
+	glVertex3d(data[0]+size, data[1], data[2]);
+	glColor3f(0.0, 0.0, 0.0);
+	glVertex3d(data[0], data[1], data[2]-size);
+	glVertex3d(data[0], data[1]-size, data[2]);
+	glColor3f(1.0, 0.0, 0.0);
+	glVertex3d(data[0]+size, data[1], data[2]);
+	// y-axis
+	glColor3f(0.0, 0.0, 0.0);
+	glVertex3d(data[0], data[1]-size, data[2]);
+	glColor3f(0.0, 1.0, 0.0);
+	glVertex3d(data[0], data[1]+size, data[2]);
+	glVertex3d(data[0], data[1]+size, data[2]);
+	glColor3f(0.0, 0.0, 1.0);
+	glVertex3d(data[0], data[1], data[2]+size);
+	glColor3f(0.0, 1.0, 0.0);
+	glVertex3d(data[0], data[1]+size, data[2]);
+	glColor3f(0.0, 0.0, 0.0);
+	glVertex3d(data[0]-size, data[1], data[2]);
+	glColor3f(0.0, 1.0, 0.0);
+	glVertex3d(data[0], data[1]+size, data[2]);
+	glColor3f(0.0, 0.0, 0.0);
+	glVertex3d(data[0], data[1], data[2]-size);
+	// z-axis
+	glColor3f(0.0, 0.0, 0.0);
+	glVertex3d(data[0], data[1], data[2]-size);
+	glColor3f(0.0, 0.0, 1.0);
+	glVertex3d(data[0], data[1], data[2]+size);
+	glColor3f(0.0, 0.0, 1.0);
+	glVertex3d(data[0], data[1], data[2]+size);
+	glColor3f(0.0, 0.0, 0.0);
+	glVertex3d(data[0], data[1]-size, data[2]);
+	glColor3f(0.0, 0.0, 1.0);
+	glVertex3d(data[0], data[1], data[2]+size);
+	glColor3f(0.0, 0.0, 0.0);
+	glVertex3d(data[0]-size, data[1], data[2]);
+	// black-axis
+	glColor3f(0.0, 0.0, 0.0);
+	glVertex3d(data[0]-size, data[1], data[2]);
+	glVertex3d(data[0], data[1]-size, data[2]);
+	glVertex3d(data[0], data[1], data[2]-size);
+	glVertex3d(data[0], data[1]-size, data[2]);
+	glVertex3d(data[0], data[1], data[2]-size);
+	glVertex3d(data[0]-size, data[1], data[2]);
+	glEnd();
+}*/
 
 void vec3d::to4f(float tgt[4]) const
 {
@@ -155,17 +155,17 @@ void vec3d::to4f(float tgt[4]) const
 	tgt[3] = float(1);
 }
 
-void vec3d::draw_star(double star_size) const
+/*void vec3d::draw_star(double star_size) const
 {
-	//~ glBegin(GL_LINES);
-	//~ glVertex3d(data[0]-star_size, data[1], data[2]);
-	//~ glVertex3d(data[0]+star_size, data[1], data[2]);
-	//~ glVertex3d(data[0], data[1]-star_size, data[2]);
-	//~ glVertex3d(data[0], data[1]+star_size, data[2]);
-	//~ glVertex3d(data[0], data[1], data[2]-star_size);
-	//~ glVertex3d(data[0], data[1], data[2]+star_size);
-	//~ glEnd();
-}
+	glBegin(GL_LINES);
+	glVertex3d(data[0]-star_size, data[1], data[2]);
+	glVertex3d(data[0]+star_size, data[1], data[2]);
+	glVertex3d(data[0], data[1]-star_size, data[2]);
+	glVertex3d(data[0], data[1]+star_size, data[2]);
+	glVertex3d(data[0], data[1], data[2]-star_size);
+	glVertex3d(data[0], data[1], data[2]+star_size);
+	glEnd();
+}*/
 
 unsigned int vec3d::read(FILE* f)
 {
@@ -435,7 +435,7 @@ void vec3d::gl_rasterpos() const
   */
  vec3d::vec3d(const QString val)
 {
-	size_t first_comma, last_comma;
+	uint first_comma, last_comma;
 	first_comma = val.indexOf(',');
 	last_comma = val.indexOf(',', first_comma + 1);
 	if((first_comma != -1)&&(last_comma != -1))

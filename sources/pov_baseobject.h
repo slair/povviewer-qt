@@ -5,6 +5,8 @@
 #ifndef POV_BASEOBJECT_H
 #define POV_BASEOBJECT_H
 
+#include <QOpenGLVertexArrayObject>
+
 #include "pov_scene.h"
 #include "pov_transform.h"
 
@@ -13,8 +15,8 @@ class pov_Scene;
 class pov_BaseObject {
 protected:
 	QString m_tag;
-	pov_Scene* m_scene;
-	pov_Transform* m_transform;
+	pov_Scene* m_scene {nullptr};
+	pov_Transform* m_transform {nullptr};
 	QVector3D m_bbox[2];
 	float m_color[5];
 
@@ -24,7 +26,9 @@ public:
 	int read(QDataStream& ds);
 	friend QDebug operator << (QDebug d, const pov_BaseObject& obj);
 	QString tag() const;
-	void getBBOX(QVector<QVector4D*>& m_mc, QVector<QOpenGLBuffer*>& m_vbos
+	void getBBOX(QVector<QVector4D*>& m_mc
+				 , QVector<QOpenGLVertexArrayObject*>& m_vaos
+				 , QVector<QOpenGLBuffer*>& m_vbos
 				 , QVector<QOpenGLBuffer*>& m_ibos);
 	//~ bool is_sphere;
 	//~ vec3d sphere_center;

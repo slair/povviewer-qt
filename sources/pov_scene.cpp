@@ -15,6 +15,7 @@
 
 pov_Scene::pov_Scene(Config* cfg, const QString& filename)
 {
+	qDebug() << "pov_Scene::pov_Scene(" << cfg << "," << filename << ")";
 	m_objects.clear();
 	m_cfg = cfg;
 	m_scenefilename = filename;
@@ -24,10 +25,10 @@ pov_Scene::pov_Scene(Config* cfg, const QString& filename)
 
 pov_Scene::~pov_Scene()
 {
-	qDebug() << "pov_Scene::~pov_Scene()";
+	qDebug() << ">pov_Scene::~pov_Scene()";
 	qDebug() << m_objects.size() << "objects to delete";
 	for(int i = 0; i < m_objects.size(); i++) {
-		//~ qDebug().nospace() << "delete m_objects[" << i << "];";
+		qDebug().nospace() << "delete m_objects[" << i << "];";
 		delete m_objects[i];
 	}
 	m_objects.clear();
@@ -37,7 +38,7 @@ pov_Scene::~pov_Scene()
 
 QDebug operator << (QDebug d, const pov_Scene& scene)
 {
-	d << "\n+pov_Scene" << endl;
+	d << "+pov_Scene" << endl;
 	const QMetaObject* pmo = scene.metaObject();
 	for (int i=0; i < pmo->propertyCount(); ++i) {
 		const QMetaProperty mp = pmo->property(i);
@@ -56,25 +57,26 @@ QDebug operator << (QDebug d, const pov_Scene& scene)
 			d << *scene.m_objects[i];
 		}
 	}
-	d << "\n-pov_Scene";
+	d << "-pov_Scene";
 	return d;
 }
 
 void pov_Scene::getGeometry(QVector<QMatrix4x4*>& m_mm
 							, QVector<QVector4D*>& m_mc
+							, QVector<QOpenGLVertexArrayObject*>& m_vaos
 							, QVector<QOpenGLBuffer*>& m_vbos
 							, QVector<QOpenGLBuffer*>& m_ibos)
 {
-	qDebug() << "void pov_Scene::getGeometry(" << m_mm
-			 << "," << m_mc << "," << m_vbos << "," << m_ibos << ")";
+	qDebug() << ">pov_Scene::getGeometry(" << &m_mm
+			 << "," << &m_mc << "," << &m_vbos << "," << &m_ibos << ")";
 
 	if (m_cfg->show_bbox()) {
 		for(int i = 0; i < m_objects.size(); i++) {
 			QMatrix4x4* mm = new QMatrix4x4();
 			mm->setToIdentity();	// fixme: one matrix for all bboxes
-			qDebug() << mm;
+			qDebug() << "mm =" << mm;
 			m_mm << mm;
-			m_objects[i]->getBBOX(m_mc, m_vbos, m_ibos);
+			m_objects[i]->getBBOX(m_mc, m_vaos, m_vbos, m_ibos);
 		}
 	}
 }
@@ -207,6 +209,7 @@ bool pov_Scene::parse()
 		if (!strncmp(tmp, "SPHR", 4)) {
 			qDebug() << "Sphere found";
 			pov_Sphere* obj = new pov_Sphere(this);
+			qDebug() << "will read from" << &ds;
 			obj->read(ds);
 			//~ qDebug() << *obj;
 			m_objects.append(obj);
@@ -226,5 +229,6 @@ bool pov_Scene::parse()
 	}
 	delete [] tmp;
 	dumpfile.close();
+	qDebug() << "scene readed";
 	return false;
 }

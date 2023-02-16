@@ -4,24 +4,38 @@
  **/
 
 #include "pov_baseobject.h"
-
 #include "pov_transform.h"
+#include "el_show.h"
 
-pov_BaseObject::pov_BaseObject(pov_Scene* s)
+/*pov_BaseObject::pov_BaseObject()
 {
+	qDebug() << ">pov_BaseObject::pov_BaseObject()";
+	m_scene = nullptr;
+	m_tag = "BASE";
+	//~ m_transform = nullptr;
+	m_transform = new pov_Transform();
+	memset(m_bbox, 0, sizeof(m_bbox));
+	memset(m_color, 0, sizeof(m_color));
+}*/
+
+pov_BaseObject::pov_BaseObject(pov_Scene* s=nullptr)
+{
+	qDebug() << ">pov_BaseObject::pov_BaseObject(" << s << ")";
 	m_scene = s;
 	m_tag = "BASE";
 	//~ m_transform = nullptr;
 	m_transform = new pov_Transform();
+	qDebug() << "m_transform =" << m_transform;
 	memset(m_bbox, 0, sizeof(m_bbox));
 	memset(m_color, 0, sizeof(m_color));
 }
 
 pov_BaseObject::~pov_BaseObject()
 {
-	qDebug() << "pov_BaseObject::~pov_BaseObject()";
-	qDebug() << m_transform;
+	qDebug() << ">pov_BaseObject::~pov_BaseObject()";
+	qDebug() << "m_transform =" << m_transform;
 	if (m_transform != nullptr) {
+		qDebug() << "m_transform =" << endl << *m_transform;
 		delete m_transform;
 		m_transform = nullptr;
 	}
@@ -55,29 +69,25 @@ QDebug operator<<(QDebug d, const pov_BaseObject& obj)
 }
 
 void pov_BaseObject::getBBOX(QVector<QVector4D*>& m_mc
+							 , QVector<QOpenGLVertexArrayObject*>& m_vaos
 							 , QVector<QOpenGLBuffer*>& m_vbos
 							 , QVector<QOpenGLBuffer*>& m_ibos)
 {
-	QVector4D* _color = new QVector4D(m_color[0], m_color[1], m_color[2], 1);
-	m_mc << _color;
-	qDebug() << "_color:" << _color;
-	QOpenGLBuffer* vbo = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
-	m_vbos << vbo;
-	qDebug() << "vbo:" << vbo;
-	QOpenGLBuffer* ibo = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
-	m_ibos << ibo;
-	qDebug() << "ibo:" << ibo;
+	qDebug() << ">pov_BaseObject::getBBOX("
+			 << &m_mc << "," << &m_vbos << "," << &m_ibos << ")";
+
 #define A m_bbox[0]
 #define B m_bbox[1]
 	QVector3D _vertices[] = {
-		A,
-		QVector3D(A.x(), A.y(), B.z()),
-		QVector3D(B.x(), A.y(), B.z()),
-		QVector3D(B.x(), A.y(), A.z()),
-		QVector3D(B.x(), B.y(), A.z()),
-		B,
-		QVector3D(A.x(), B.y(), B.z()),
-		QVector3D(A.x(), B.y(), A.z())
+		A,									// 0
+		QVector3D(A.x(), A.y(), B.z()),		// 1
+		QVector3D(B.x(), A.y(), B.z()),		// 2
+		QVector3D(B.x(), A.y(), A.z()),		// 3
+
+		QVector3D(B.x(), B.y(), A.z()),		// 4
+		B,									// 5
+		QVector3D(A.x(), B.y(), B.z()),		// 6
+		QVector3D(A.x(), B.y(), A.z())		// 7
 	};
 #undef B
 #undef A
@@ -96,21 +106,47 @@ void pov_BaseObject::getBBOX(QVector<QVector4D*>& m_mc
 		2, 5
 	};
 
-	qDebug() << "sizeof(_vertices) =" << sizeof(_vertices);
+	QVector4D* _color = new QVector4D(m_color[0], m_color[1], m_color[2], 1);
+	QOpenGLVertexArrayObject* vao = new QOpenGLVertexArrayObject();
+	QOpenGLBuffer* vbo = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
+	QOpenGLBuffer* ibo = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
+
+	vao->create();
+	vao->bind();
+
+	qDebug() << "sizeof(_vertices) =" << sizeof(_vertices) << "bytes"
+			 << sizeof(_vertices) / sizeof(QVector3D) << "vertices";
 	vbo->create();
 	vbo->bind();
 	vbo->setUsagePattern(QOpenGLBuffer::StaticDraw);
 	vbo->allocate(_vertices, sizeof(_vertices));
 
-	qDebug() << "sizeof(_indices) =" << sizeof(_indices);
+	qDebug() << "sizeof(_indices) =" << sizeof(_indices) << "bytes"
+			 << sizeof(_indices) / sizeof(GLuint) / 2 << "lines";
 	ibo->create();
 	ibo->bind();
 	ibo->setUsagePattern(QOpenGLBuffer::StaticDraw);
 	ibo->allocate(_indices, sizeof(_indices));
 
+	m_mc << _color;
+	qDebug() << "_color:" << *_color;
+
+	m_vaos << vao;
+	qDebug() << "vao:" << vbo << "vao->objectId() =" << vao->objectId();
+	m_vbos << vbo;
+	qDebug() << "vbo:" << vbo << "vbo->bufferId() =" << vbo->bufferId();
+	m_ibos << ibo;
+	qDebug() << "ibo:" << ibo << "ibo->bufferId() =" << ibo->bufferId();
+
+	//~ ibo->release();
+	//~ vbo->release();
+	//~ vao->release();
+
+	show_ibo(GL_LINES, ibo, vbo, vao, QVector3D());
 }
 int pov_BaseObject::read(QDataStream& ds)
 {
+	qDebug() << ">pov_BaseObject::read(" << &ds << ")";
 	char* tmp = new char[5];
 	tmp[4] = 0;
 	int freaded = 0;

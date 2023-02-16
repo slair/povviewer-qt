@@ -59,12 +59,12 @@ class Config : public QObject {
 
 	Q_PROPERTY(bool show_axis READ show_axis WRITE set_show_axis)
 	Q_PROPERTY(float axis_size MEMBER m_fAxisSize READ axis_size WRITE set_axis_size)
-	Q_PROPERTY(bool m_bShowBBOX READ show_bbox WRITE set_show_bbox)
-	Q_PROPERTY(bool m_bShowPOINTS READ show_points WRITE set_show_points)
-	Q_PROPERTY(float m_fPointsSize READ points_size WRITE set_points_size)
-	Q_PROPERTY(bool m_bShowLINES READ show_lines WRITE set_show_lines)
-	Q_PROPERTY(float m_fLinesWidth READ line_width WRITE set_line_width)
-	Q_PROPERTY(bool m_bShowSOLID READ show_solid WRITE set_show_solid)
+	Q_PROPERTY(bool show_bbox READ show_bbox WRITE set_show_bbox)
+	Q_PROPERTY(bool show_points READ show_points WRITE set_show_points)
+	Q_PROPERTY(float points_size READ points_size WRITE set_points_size)
+	Q_PROPERTY(bool show_lines READ show_lines WRITE set_show_lines)
+	Q_PROPERTY(float line_width READ line_width WRITE set_line_width)
+	Q_PROPERTY(bool show_solid READ show_solid WRITE set_show_solid)
 
 	Q_PROPERTY(QVector3D camera_position READ cam_pos WRITE set_cam_pos)
 	Q_PROPERTY(QVector3D camera_target READ cam_tgt WRITE set_cam_tgt)

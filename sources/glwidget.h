@@ -20,7 +20,10 @@
 
 class PosCol {
 public:
-	PosCol();
+	PosCol() {
+		position = QVector3D(0.0f, 0.0f, 0.0f);
+		color = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+	};
 
 	PosCol(const QVector3D& p, const QVector4D& c) {
 		position = p;
@@ -33,7 +36,7 @@ public:
 	};
 
 	~PosCol() {
-		qDebug() << "PosCol::~PosCol()";
+		//~ qDebug() << "PosCol::~PosCol()";
 	};
 
 	friend bool operator==(const PosCol& lobj, const PosCol& robj) {
@@ -43,8 +46,8 @@ public:
 		return false;
 	};
 
-	friend QDebug operator<<(QDebug d, const PosCol& obj){
-		d << obj.position << "," << obj.color;
+	friend QDebug operator<<(QDebug d, const PosCol& obj) {
+		d.nospace() << obj.position << "\t" << obj.color;
 		return d;
 	};
 private:
@@ -91,26 +94,36 @@ private:
 	QOpenGLFunctions_2_0* m_funcs = nullptr;
 	QOpenGLShaderProgram* m_prg_a_pos_a_col = nullptr;
 	QOpenGLShaderProgram* m_prg_u_col_a_pos = nullptr;
-	void initializeAxis();
-	void drawAxis();
-	void getGeometry();		// fill m_vbos and m_ibos with data from m_scene
-	void drawGeometry();
+
 	void initializeShaders();
 	void initializeTextures();
 	void initializeMatrices();
-	void generate_m_view();
-	void clearBuffers();
+
+	QVector<QOpenGLVertexArrayObject*> m_vaos;
+	QVector<QMatrix4x4*> m_mm;		// model matrices
+	QVector<QOpenGLBuffer*> m_vbos;	// VertexBuffers
+	QVector<QOpenGLBuffer*> m_ibos;	// IndexBuffers
+	QVector<QVector4D*> m_mc;		// models colors
+	void getGeometry();		// fill m_vbos and m_ibos with data from m_scene
+	void drawGeometry();
 
 	QOpenGLBuffer m_axis_points {QOpenGLBuffer::VertexBuffer};
 	QOpenGLBuffer m_axis_indices {QOpenGLBuffer::IndexBuffer};
 	QOpenGLVertexArrayObject m_vao_axis;
+	void getAxis();
+	void drawAxis();
 
+	void clearBuffers();
+
+	QMatrix4x4 m_proj;
+	QMatrix4x4 m_view;
+	QMatrix4x4 m_mm1;
 	QVector3D cam_pos;		// location
 	QVector3D cam_lat;		// look_at
 	QVector3D cam_up;		// up
 	QVector3D cam_right;	// right
 	QVector3D cam_dir;		// direction
-	float cam_han;		// horizontal angle
+	float cam_han;			// horizontal angle
 	float cam_znear;
 	float cam_zfar;
 	float cam_ratio;
@@ -118,41 +131,14 @@ private:
 	void fix_right();
 	void fix_up();
 	void fix_dir();
+	void generate_mv_mp();
 	void show_cam() const;
-
-	QMatrix4x4 m_proj;
-	QMatrix4x4 m_view;
-	QMatrix4x4 m_mm1;
 
 	QPoint m_lastPos;
 	bool m_lmb_pressed = false;
 	bool m_mmb_pressed = false;
 	bool m_rmb_pressed = false;
 	float m_MouseSens = 0.1f;
-
-	QOpenGLVertexArrayObject m_vao_scene;
-	QVector<QMatrix4x4*> m_mm;		// model matrices
-	QVector<QOpenGLBuffer*> m_vbos;	// VertexBuffers
-	QVector<QOpenGLBuffer*> m_ibos;	// IndexBuffers
-	QVector<QVector4D*> m_mc;		// models colors
-
-	//~ void setupVertexAttribs();
-	//~ bool m_core;
-	//~ int m_xRot = 0;
-	//~ int m_yRot = 0;
-	//~ int m_zRot = 0;
-	//~ BaseObj m_logo;
-	//~ QOpenGLVertexArrayObject m_vao;
-	//~ QOpenGLBuffer m_logoVbo;
-	//~ std::unique_ptr<QOpenGLShaderProgram> m_program;
-	//~ int m_projMatrixLoc = 0;
-	//~ int m_mvMatrixLoc = 0;
-	//~ int m_normalMatrixLoc = 0;
-	//~ int m_lightPosLoc = 0;
-	//~ QMatrix4x4 m_proj;
-	//~ QMatrix4x4 m_camera;
-	//~ QMatrix4x4 m_world;
-	//~ static bool m_transparent;
 };
 
 #endif

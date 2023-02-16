@@ -10,7 +10,8 @@
 
 #include "myconfig.h"
 
-Config::Config() : m_bChgWinPos(true), m_iWinPosX(80), m_iWinPosY(80)
+Config::Config()
+	: m_bChgWinPos(true), m_iWinPosX(80), m_iWinPosY(80)
 	, m_bChgWinSize(true), m_uiWinWidth(320), m_uiWinHeight(240)
 	, m_bSaveLocalCFG(false), m_bLoadLocalCFG(true), m_bSaveHomeCFG(true)
 	, m_Changed(false), m_fp_dump("c:\\temp\\scene.dump")
@@ -39,8 +40,8 @@ Config::Config() : m_bChgWinPos(true), m_iWinPosX(80), m_iWinPosY(80)
 
 	m_bShowSOLID = true;		// show faces
 
-	m_CamPos = QVector3D(0, 0, 0);		// camera position <0,0,0>
-	m_CamTgt = QVector3D(0, 0, 1);		// camera target <0,0,1>
+	m_CamPos = QVector3D(0, 50, -1);		// camera position <0,0,0>
+	m_CamTgt = QVector3D(0, 50, 0);		// camera target <0,0,1>
 	m_CamDir = QVector3D(0, 0, 1);		// camera direction <0,0,1>
 	m_CamRgt = QVector3D(1.33f, 0, 0);	// camera right 1.33*<1,0,0>
 	m_CamUp = QVector3D(0, 1, 0);		// camera right <0,1,0>

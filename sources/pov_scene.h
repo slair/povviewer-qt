@@ -26,16 +26,25 @@ class pov_Scene : public QObject, protected QOpenGLFunctions {
 public:
 	pov_Scene(Config* cfg, const QString& filename);
 	~pov_Scene();
+	// fixme: implement it
+	pov_Scene(const pov_Scene& scene);
+	pov_Scene& operator=(const pov_Scene& scene);
+
 	bool parse();
 	friend QDebug operator << (QDebug d, const pov_Scene& pov_Scene);
-	Config* cfg() const {return m_cfg;}
-	QString filename() const {return m_scenefilename;}
+	Config* cfg() const {
+		return m_cfg;
+	}
+	QString filename() const {
+		return m_scenefilename;
+	}
 	void setup_perspective(float cam_ratio);
 	void setup_ortho();
 	void getGeometry(QVector<QMatrix4x4*>& m_mm
-	, QVector<QVector4D*>& m_mc
-	, QVector<QOpenGLBuffer*>& m_vbos
-	, QVector<QOpenGLBuffer*>& m_ibos);
+					 , QVector<QVector4D*>& m_mc
+					 , QVector<QOpenGLVertexArrayObject*>& m_vaos
+					 , QVector<QOpenGLBuffer*>& m_vbos
+					 , QVector<QOpenGLBuffer*>& m_ibos);
 
 private:
 	Config* m_cfg;
