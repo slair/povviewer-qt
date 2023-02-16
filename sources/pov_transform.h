@@ -13,6 +13,23 @@ private:
 	double* m_matrix;
 public:
 	pov_Transform();
+
+	pov_Transform(const pov_Transform& pt) {	// copy constructor
+		qDebug() << ">pov_Transform::pov_Transform(" << pt << ")";
+		m_matrix = new double[16];
+		memcpy(m_matrix, pt.m_matrix, sizeof(m_matrix));
+		qDebug() << ">pov_Transform::pov_Transform(" << pt << ")";
+	};
+	pov_Transform& operator=(const pov_Transform& pt)
+	{
+		qDebug() << ">pov_Transform& operator=(" << pt << ")";
+		if (&pt == this)
+			qWarning() << &pt << "==" << this;
+		memcpy(m_matrix, pt.m_matrix, sizeof(m_matrix));
+		qDebug() << "<pov_Transform& operator=(" << pt << ")";
+		return *this;
+	};
+
 	~pov_Transform();
 	void setToIdentity();
 	double operator[](const int idx) const;

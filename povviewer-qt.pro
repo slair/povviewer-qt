@@ -1,4 +1,7 @@
-#~ CONFIG += c++11
+#!/usr/bin/qmake
+# -*- coding: utf-8 -*-
+
+DEFINES += "DEBUG_CONTEXT=1"	# 1 - one line
 
 message($$QMAKESPEC)
 

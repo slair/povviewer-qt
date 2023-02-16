@@ -11,8 +11,10 @@
 
 pov_Transform::pov_Transform()
 {
+	qDebug() << ">pov_Transform::pov_Transform()";
 	m_matrix = new double[16];
 	setToIdentity();
+	qDebug() << "<pov_Transform::pov_Transform()";
 }
 
 pov_Transform::~pov_Transform()
@@ -23,7 +25,7 @@ pov_Transform::~pov_Transform()
 		delete[] m_matrix;
 		m_matrix = nullptr;
 	}
-	qDebug() << "pov_Transform deleted";
+	qDebug() << "<pov_Transform::~pov_Transform()";
 }
 
 void pov_Transform::setToIdentity()

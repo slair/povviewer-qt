@@ -22,6 +22,31 @@ protected:
 
 public:
 	pov_BaseObject(pov_Scene* s);
+
+	pov_BaseObject(const pov_BaseObject& pbo) {	// copy constructor
+		qDebug() << ">pov_BaseObject::pov_BaseObject(" << pbo << ")";
+		m_tag = pbo.m_tag;
+		m_scene = pbo.m_scene;
+		m_transform = new pov_Transform();
+		m_transform = pbo.m_transform;
+		memcpy(m_bbox, pbo.m_bbox, sizeof(m_bbox));
+		memcpy(m_color, pbo.m_color, sizeof(m_color));
+		qDebug() << "<pov_BaseObject::pov_BaseObject(" << pbo << ")";
+	};
+	pov_BaseObject& operator=(const pov_BaseObject& pbo)
+	{
+		qDebug() << ">pov_BaseObject& operator=(" << pbo << ")";
+		if (&pbo == this)
+			qWarning() << &pbo << "==" << this;
+		m_tag = pbo.m_tag;
+		m_scene = pbo.m_scene;
+		m_transform = pbo.m_transform;
+		memcpy(m_bbox, pbo.m_bbox, sizeof(m_bbox));
+		memcpy(m_color, pbo.m_color, sizeof(m_color));
+		qDebug() << "<pov_BaseObject& operator=(" << pbo << ")";
+		return *this;
+	};
+
 	virtual ~pov_BaseObject();
 	int read(QDataStream& ds);
 	friend QDebug operator << (QDebug d, const pov_BaseObject& obj);

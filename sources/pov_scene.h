@@ -26,9 +26,17 @@ class pov_Scene : public QObject, protected QOpenGLFunctions {
 public:
 	pov_Scene(Config* cfg, const QString& filename);
 	~pov_Scene();
-	// fixme: implement it
-	pov_Scene(const pov_Scene& scene);
-	pov_Scene& operator=(const pov_Scene& scene);
+
+	pov_Scene(const pov_Scene& scene) {
+		qDebug() << ">pov_Scene::pov_Scene(" << scene << ")";
+		qCritical() << "Never call me";
+	};
+
+	pov_Scene& operator=(const pov_Scene& scene)
+	{
+		qDebug() << ">pov_Scene::operator=(" << scene << ")";
+		qCritical() << "Never call me";
+	};
 
 	bool parse();
 	friend QDebug operator << (QDebug d, const pov_Scene& pov_Scene);

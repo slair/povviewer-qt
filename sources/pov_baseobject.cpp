@@ -28,6 +28,7 @@ pov_BaseObject::pov_BaseObject(pov_Scene* s=nullptr)
 	qDebug() << "m_transform =" << m_transform;
 	memset(m_bbox, 0, sizeof(m_bbox));
 	memset(m_color, 0, sizeof(m_color));
+	qDebug() << "<pov_BaseObject::pov_BaseObject(" << s << ")";
 }
 
 pov_BaseObject::~pov_BaseObject()
@@ -39,7 +40,7 @@ pov_BaseObject::~pov_BaseObject()
 		delete m_transform;
 		m_transform = nullptr;
 	}
-	qDebug() << "pov_BaseObject deleted";
+	qDebug() << "<pov_BaseObject::~pov_BaseObject()";
 }
 
 QString pov_BaseObject::tag() const
@@ -112,7 +113,8 @@ void pov_BaseObject::getBBOX(QVector<QVector4D*>& m_mc
 	QOpenGLBuffer* ibo = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
 
 	vao->create();
-	vao->bind();
+	//~ vao->bind();
+	QOpenGLVertexArrayObject::Binder vaoBinder(vao);
 
 	qDebug() << "sizeof(_vertices) =" << sizeof(_vertices) << "bytes"
 			 << sizeof(_vertices) / sizeof(QVector3D) << "vertices";

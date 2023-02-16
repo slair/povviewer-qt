@@ -30,7 +30,9 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 	QByteArray localMsg = msg.toLocal8Bit();
 #ifdef DEBUG_CONTEXT
 	const char *file = context.file ? context.file : "";
+#pragma warning(disable : 4189)
 	const char *function = context.function ? context.function : "";
+#pragma warning(default : 4189)
 #endif
 	if (ATTENTION_CHARS.contains(msg[0])) {
 		AC = msg[0];
@@ -58,13 +60,21 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 	}
 	if (localMsg != "QOpenGLFramebufferObject: Unsupported "
 		"framebuffer format.") {
-#ifdef DEBUG_CONTEXT
+//~ #ifdef DEBUG_CONTEXT
+#if DEBUG_CONTEXT == 1
+		fprintf(stderr, "%s: %s\t\t\t\t\t\t\t\t\t\t\t\tFile \"%s\", line %u\n"
+				, msg_type.toLocal8Bit().constData()
+				, localMsg.constData(), file, context.line);
+#elif DEBUG_CONTEXT == 2
+		fprintf(stderr, "%s: %s\n", msg_type.toLocal8Bit().constData()
+				, localMsg.constData());
 		fprintf(stderr, "%s:%u: %s\n%s: %s\n\n", file, context.line, function
 				, msg_type.toLocal8Bit().constData(), localMsg.constData());
 #else
 		fprintf(stderr, "%s: %s\n", msg_type.toLocal8Bit().constData()
 				, localMsg.constData());
 #endif
+//~ #endif
 	}
 }
 

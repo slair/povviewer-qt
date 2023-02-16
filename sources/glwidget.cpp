@@ -92,6 +92,68 @@ GLWidget::~GLWidget()
 	qDebug() << "GLWidget deleted";
 }
 
+void GLWidget::clearBuffers()
+{
+	qDebug() << ">GLWidget::clearBuffers()";
+
+	qDebug() << "m_vbos.size() =" << m_vbos.size();
+	for(int i = 0; i < m_vbos.size(); i++) {
+		if (m_vbos[i] != nullptr) {
+			m_vbos[i]->release();
+			m_vbos[i]->destroy();
+			delete m_vbos[i];
+			m_vbos[i] = nullptr;
+		}
+	}
+	m_vbos.clear();
+	qDebug() << "m_vbos.clear()";
+
+	qDebug() << "m_ibos.size() =" << m_ibos.size();
+	for(int i = 0; i < m_ibos.size(); i++) {
+		if (m_ibos[i] != nullptr) {
+			m_ibos[i]->release();
+			m_ibos[i]->destroy();
+			delete m_ibos[i];
+			m_ibos[i] = nullptr;
+		}
+	}
+	m_ibos.clear();
+	qDebug() << "m_ibos.clear()";
+
+	qDebug() << "m_mm.size() =" << m_mm.size();
+	for(int i = 0; i < m_mm.size(); i++) {
+		if (m_mm[i] != nullptr) {
+			qDebug() << "m_mm[" << i << "] = " << m_mm[i];
+			delete m_mm[i];
+			m_mm[i] = nullptr;
+		}
+	}
+	m_mm.clear();
+	qDebug() << "m_mm.clear()";
+
+	qDebug() << "m_mc.size() = " << m_mc.size();
+	for(int i = 0; i < m_mc.size(); i++) {
+		if (m_mc[i] != nullptr) {
+			delete m_mc[i];
+			m_mc[i] = nullptr;
+		}
+	}
+	m_mc.clear();
+	qDebug() << "m_mc.clear()";
+
+	qDebug() << "m_vaos.size() = " << m_vaos.size();
+	for(int i = 0; i < m_vaos.size(); i++) {
+		if (m_vaos[i] != nullptr) {
+			m_vaos[i]->release();
+			m_vaos[i]->destroy();
+			delete m_vaos[i];
+			m_vaos[i] = nullptr;
+		}
+	}
+	m_vaos.clear();
+	qDebug() << "m_vaos.clear()";
+}
+
 QSize GLWidget::minimumSizeHint() const
 {
 	return QSize(51, 38);
@@ -155,7 +217,7 @@ void GLWidget::initializeGL()
 	initializeShaders();
 
 	getAxis();
-	//~ getGeometry();
+	getGeometry();
 
 	initializeTextures();
 	initializeMatrices();
@@ -308,7 +370,9 @@ void GLWidget::getAxis()
 	for(int i = 0; i < indices.size(); i++) qDebug() << i << indices[i];
 
 	m_vao_axis.create();
-	m_vao_axis.bind();
+	//~ m_vao_axis.bind();
+	QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao_axis);
+	qDebug() << "m_vao_axis.objectId() =" << m_vao_axis.objectId();
 
 	m_axis_points.create();
 	m_axis_points.bind();
@@ -332,68 +396,6 @@ void GLWidget::getAxis()
 	show_ibo(GL_LINES, &m_axis_indices, &m_axis_points, &m_vao_axis, PosCol());
 }
 
-void GLWidget::clearBuffers()
-{
-	qDebug() << ">GLWidget::clearBuffers()";
-
-	qDebug() << "m_vbos.size() =" << m_vbos.size();
-	for(int i = 0; i < m_vbos.size(); i++) {
-		if (m_vbos[i] != nullptr) {
-			m_vbos[i]->release();
-			m_vbos[i]->destroy();
-			delete m_vbos[i];
-			m_vbos[i] = nullptr;
-		}
-	}
-	m_vbos.clear();
-	qDebug() << "m_vbos.clear()";
-
-	qDebug() << "m_ibos.size() =" << m_ibos.size();
-	for(int i = 0; i < m_ibos.size(); i++) {
-		if (m_ibos[i] != nullptr) {
-			m_ibos[i]->release();
-			m_ibos[i]->destroy();
-			delete m_ibos[i];
-			m_ibos[i] = nullptr;
-		}
-	}
-	m_ibos.clear();
-	qDebug() << "m_ibos.clear()";
-
-	qDebug() << "m_mm.size() =" << m_mm.size();
-	for(int i = 0; i < m_mm.size(); i++) {
-		if (m_mm[i] != nullptr) {
-			qDebug() << "m_mm[" << i << "] = " << m_mm[i];
-			delete m_mm[i];
-			m_mm[i] = nullptr;
-		}
-	}
-	m_mm.clear();
-	qDebug() << "m_mm.clear()";
-
-	qDebug() << "m_mc.size() = " << m_mc.size();
-	for(int i = 0; i < m_mc.size(); i++) {
-		if (m_mc[i] != nullptr) {
-			delete m_mc[i];
-			m_mc[i] = nullptr;
-		}
-	}
-	m_mc.clear();
-	qDebug() << "m_mc.clear()";
-
-	qDebug() << "m_vaos.size() = " << m_vaos.size();
-	for(int i = 0; i < m_vaos.size(); i++) {
-		if (m_vaos[i] != nullptr) {
-			m_vaos[i]->release();
-			m_vaos[i]->destroy();
-			delete m_vaos[i];
-			m_vaos[i] = nullptr;
-		}
-	}
-	m_vaos.clear();
-	qDebug() << "m_vaos.clear()";
-}
-
 void GLWidget::getGeometry()
 {
 	qDebug() << ">GLWidget::getGeometry()";
@@ -407,48 +409,6 @@ void GLWidget::getGeometry()
 		show_ibo(GL_LINES, m_ibos[i], m_vbos[i], m_vaos[i], QVector3D());
 	}
 }
-
-/*void GLWidget::initializeTriangle()
-{
-	// setup vertex data
-	QVector<PosCol> points;
-	QVector<GLuint> indices;
-
-	float _ts = 0.5;
-
-	indices << add_item(points, {QVector3D(_ts, -_ts, 0), COLOR_BRIGHT_GREEN});
-	indices << add_item(points, {QVector3D(0, _ts, 0), COLOR_BRIGHT_RED});
-	indices << add_item(points, {QVector3D(-_ts, -_ts, 0), COLOR_BRIGHT_BLUE});
-
-	qDebug() << "points.size() =" << points.size() << "PosCol";
-	qDebug() << "points.size() =" << points.size() * sizeof(PosCol)
-			 << "bytes";
-	qDebug() << "points:";
-	for(int i = 0; i < points.size(); i++) qDebug() << i << points[i];
-	qDebug() << "indices.size() =" << indices.size() << "GLuint";
-	qDebug() << "iindices.size() =" << indices.size() * sizeof(GLuint)
-			 << "bytes";
-	qDebug() << "indices:";
-	for(int i = 0; i < indices.size(); i++) qDebug() << i << indices[i];
-
-	m_vao_triangle.create();
-	m_vao_triangle.bind();
-
-	m_triangle_points.create();
-	m_triangle_points.bind();
-	m_triangle_points.setUsagePattern(QOpenGLBuffer::StaticDraw);
-	m_triangle_points.allocate(points.constData()
-						   , points.size() * sizeof(PosCol));
-
-	m_triangle_indices.create();
-	m_triangle_indices.bind();
-	m_triangle_indices.setUsagePattern(QOpenGLBuffer::StaticDraw);
-	m_triangle_indices.allocate(indices.constData()
-							, indices.size() * sizeof(GLuint));
-
-	indices.clear();
-	points.clear();
-}*/
 
 void GLWidget::initializeShaders()
 {
@@ -485,7 +445,8 @@ void GLWidget::drawAxis()
 {
 	qDebug() << ">GLWidget::drawAxis()";
 	//~ m_prg_a_pos_a_col->bind();
-	m_vao_axis.bind();
+	//~ m_vao_axis.bind();
+	QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao_axis);
 	//~ m_axis_points.bind();
 	//~ m_axis_indices.bind();
 
@@ -527,7 +488,8 @@ void GLWidget::drawGeometry()
 	//~ qDebug() << "m_vao_scene.objectId() =" << m_vao_scene.objectId();
 
 	for(int i=0; i < m_vaos.size(); i++) {
-		m_vaos[i]->bind();
+		//~ m_vaos[i]->bind();
+		QOpenGLVertexArrayObject::Binder vaoBinder(m_vaos[i]);
 		//~ m_vbos[i]->bind();
 		//~ m_ibos[i]->bind();
 
@@ -585,9 +547,9 @@ void GLWidget::paintGL()
 	m_prg_a_pos_a_col->release();
 
 	// draw scene
-	//~ m_prg_u_col_a_pos->bind();
-	//~ drawGeometry();
-	//~ m_prg_u_col_a_pos->release();
+	m_prg_u_col_a_pos->bind();
+	drawGeometry();
+	m_prg_u_col_a_pos->release();
 }
 
 void GLWidget::resizeGL(int w, int h)
@@ -724,6 +686,7 @@ void GLWidget::wheelEvent(QWheelEvent *e)
 	//~ draw();
 	//~ qDebug() << "e->delta() =" << e->delta();
 	//~ qDebug() << "e->angleDelta() =" << e->angleDelta();
+	m_MouseSens = 1.0f;
 	if (e->delta() > 0) {
 		cam_pos = cam_pos + cam_dir * m_MouseSens;
 		cam_lat = cam_pos + cam_dir * m_MouseSens;

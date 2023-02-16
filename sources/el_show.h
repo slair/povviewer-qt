@@ -33,6 +33,7 @@ void show_ibo(const GLenum type, QOpenGLBuffer* ibo
 {
 	qDebug() << ">show_ibo(" << type << "," << ibo << "," << vbo << "," << vao
 			 << "," << i << ")";
+	qDebug() << "vao->objectId() =" << vao->objectId();
 	qDebug() << "ibo->bufferId() =" << ibo->bufferId();
 	qDebug() << "vbo->bufferId() =" << vbo->bufferId();
 
@@ -40,10 +41,10 @@ void show_ibo(const GLenum type, QOpenGLBuffer* ibo
 	qDebug() << "sizeof(_T) =" << sizeof(_T) << "bytes";
 	qDebug() << "vbo->size() / sizeof(i) =" << vbo->size() / sizeof(i)
 			 << "items";
-	qDebug() << "vao->objectId() =" << vao->objectId();
 	qDebug() << " ";
 
-	vao->bind();
+	//~ vao->bind();
+	QOpenGLVertexArrayObject::Binder vaoBinder(vao);
 
 	_T* items = new _T[vbo->size() / sizeof(i)];
 	if (vbo->read(0, items, vbo->size())) {

@@ -15,12 +15,13 @@
 
 pov_Scene::pov_Scene(Config* cfg, const QString& filename)
 {
-	qDebug() << "pov_Scene::pov_Scene(" << cfg << "," << filename << ")";
+	qDebug() << ">pov_Scene::pov_Scene(" << cfg << "," << filename << ")";
 	m_objects.clear();
 	m_cfg = cfg;
 	m_scenefilename = filename;
 	m_clockvalue = 123.456;
 	parse();
+	qDebug() << "<pov_Scene::pov_Scene(" << cfg << "," << filename << ")";
 }
 
 pov_Scene::~pov_Scene()
@@ -33,7 +34,7 @@ pov_Scene::~pov_Scene()
 	}
 	m_objects.clear();
 	//~ delete m_cfg;
-	qDebug() << "pov_Scene deleted";
+	qDebug() << "<pov_Scene::~pov_Scene()";
 }
 
 QDebug operator << (QDebug d, const pov_Scene& scene)
@@ -52,7 +53,7 @@ QDebug operator << (QDebug d, const pov_Scene& scene)
 
 	for(int i = 0; i < scene.m_objects.size(); i++) {
 		if (scene.m_objects[i]->tag() == "SPHR") {
-			d << *(pov_Sphere*)scene.m_objects[i];
+			d << *((pov_Sphere*)scene.m_objects[i]);
 		} else {
 			d << *scene.m_objects[i];
 		}
@@ -108,6 +109,7 @@ bool delete_zero_file(const QString& filepath)
 
 bool pov_Scene::parse()
 {
+	qDebug() << ">pov_Scene::parse()";
 	// done:   3. check for local config
 	m_cfg->load_from_dir(".");
 
@@ -229,6 +231,6 @@ bool pov_Scene::parse()
 	}
 	delete [] tmp;
 	dumpfile.close();
-	qDebug() << "scene readed";
+	qDebug() << "<pov_Scene::parse()";
 	return false;
 }
