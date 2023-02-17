@@ -7,6 +7,11 @@ message($$QMAKESPEC)
 
 linux-g++ {
 	QMAKE_CXXFLAGS += -std=c++11
+	QMAKE_CXXFLAGS += -Werror
+}
+
+win32-msvc* {
+	QMAKE_CXXFLAGS += /WX
 }
 
 CONFIG += console

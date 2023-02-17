@@ -80,6 +80,8 @@ void pov_Scene::getGeometry(QVector<QMatrix4x4*>& m_mm
 			m_objects[i]->getBBOX(m_mc, m_vaos, m_vbos, m_ibos);
 		}
 	}
+	qDebug() << "<pov_Scene::getGeometry(" << &m_mm
+			 << "," << &m_mc << "," << &m_vbos << "," << &m_ibos << ")";
 }
 
 bool delete_file(const QString& filepath)

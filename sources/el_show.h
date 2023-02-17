@@ -25,6 +25,7 @@ void show_vbo(const QOpenGLBuffer* vbo, const _T i)
 				 << ") failed";
 	};
 	delete[] items;
+	qDebug() << "<show_vbo(" << vbo << "," << i << ")";
 }
 
 template <typename _T>
@@ -89,6 +90,8 @@ void show_ibo(const GLenum type, QOpenGLBuffer* ibo
 	delete[] items;
 
 	vao->release();
+	qDebug() << "<show_ibo(" << type << "," << ibo << "," << vbo << "," << vao
+			 << "," << i << ")";
 }
 
 #endif // EL_SHOW_H

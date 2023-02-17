@@ -61,13 +61,22 @@ GLWidget::GLWidget(QWidget *parent, pov_Scene* scene)
 	fmt.setAlphaBufferSize(8);
 	qDebug() << "fmt.alphaBufferSize() =" << fmt.alphaBufferSize();
 	setFormat(fmt);
+	qDebug() << "<GLWidget::GLWidget(" << parent << "," << scene << ")";
 }
 
 void GLWidget::cleanup()
 {
 	qDebug() << ">GLWidget::cleanup()";
-	if (m_prg_a_pos_a_col == nullptr)
+	if (m_prg_a_pos_a_col == nullptr) {
+		qWarning() << "m_prg_a_pos_a_col =" << m_prg_a_pos_a_col;
+		qDebug() << "<GLWidget::cleanup()";
 		return;
+	}
+	if (m_prg_u_col_a_pos == nullptr) {
+		qWarning() << "m_prg_u_col_a_pos =" << m_prg_u_col_a_pos;
+		qDebug() << "<GLWidget::cleanup()";
+		return;
+	}
 
 	makeCurrent();
 
@@ -83,13 +92,14 @@ void GLWidget::cleanup()
 	m_prg_u_col_a_pos = nullptr;
 
 	doneCurrent();
+	qDebug() << "<GLWidget::cleanup()";
 }
 
 GLWidget::~GLWidget()
 {
 	qDebug() << ">GLWidget::~GLWidget()";
 	cleanup();
-	qDebug() << "GLWidget deleted";
+	qDebug() << "<GLWidget::~GLWidget()";
 }
 
 void GLWidget::clearBuffers()
@@ -152,6 +162,7 @@ void GLWidget::clearBuffers()
 	}
 	m_vaos.clear();
 	qDebug() << "m_vaos.clear()";
+	qDebug() << "<GLWidget::clearBuffers()";
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -224,6 +235,7 @@ void GLWidget::initializeGL()
 
 	connect(context(), &QOpenGLContext::aboutToBeDestroyed, this
 			, &GLWidget::cleanup);
+	qDebug() << "<GLWidget::initializeGL()";
 }
 
 void GLWidget::initializeMatrices()
@@ -245,11 +257,13 @@ void GLWidget::initializeMatrices()
 	cam_znear = 0.01f;
 	cam_zfar = 2048.0f;
 	show_cam();
+	qDebug() << "<GLWidget::initializeMatrices()";
 }
 
 void GLWidget::initializeTextures()
 {
 	qDebug() << ">GLWidget::initializeTextures()";
+	qDebug() << "<GLWidget::initializeTextures()";
 }
 
 void GLWidget::generate_mv_mp()
@@ -276,6 +290,7 @@ void GLWidget::fix_right()
 	//~ cam_right = QVector3D::crossProduct(cam_dir, cam_up);
 	cam_right = QVector3D::crossProduct(cam_up, cam_dir);
 	cam_right.normalize();
+	qDebug() << "<GLWidget::fix_right()";
 }
 
 void GLWidget::fix_dir()
@@ -284,6 +299,7 @@ void GLWidget::fix_dir()
 	cam_dir = QVector3D::crossProduct(cam_up, cam_right);
 	//~ cam_dir = QVector3D::crossProduct(cam_right, cam_up);
 	cam_dir.normalize();
+	qDebug() << "<GLWidget::fix_dir()";
 }
 
 void GLWidget::fix_up()
@@ -292,6 +308,7 @@ void GLWidget::fix_up()
 	//~ cam_up = QVector3D::crossProduct(cam_right, cam_dir);
 	cam_up = QVector3D::crossProduct(cam_dir, cam_right);
 	cam_up.normalize();
+	qDebug() << "<GLWidget::fix_up()";
 }
 
 void GLWidget::show_cam() const
@@ -369,11 +386,6 @@ void GLWidget::getAxis()
 	qDebug() << "indices:";
 	for(int i = 0; i < indices.size(); i++) qDebug() << i << indices[i];
 
-	m_vao_axis.create();
-	//~ m_vao_axis.bind();
-	QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao_axis);
-	qDebug() << "m_vao_axis.objectId() =" << m_vao_axis.objectId();
-
 	m_axis_points.create();
 	m_axis_points.bind();
 	m_axis_points.setUsagePattern(QOpenGLBuffer::StaticDraw);
@@ -386,6 +398,11 @@ void GLWidget::getAxis()
 	m_axis_indices.allocate(indices.constData()
 							, indices.size() * sizeof(GLuint));
 
+	m_vao_axis.create();
+	//~ m_vao_axis.bind();
+	QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao_axis);
+	qDebug() << "m_vao_axis.objectId() =" << m_vao_axis.objectId();
+
 	indices.clear();
 	points.clear();
 
@@ -394,6 +411,7 @@ void GLWidget::getAxis()
 	//~ m_vao_axis.release();
 
 	show_ibo(GL_LINES, &m_axis_indices, &m_axis_points, &m_vao_axis, PosCol());
+	qDebug() << "<GLWidget::getAxis()";
 }
 
 void GLWidget::getGeometry()
@@ -408,6 +426,7 @@ void GLWidget::getGeometry()
 		qDebug() << "+Object:" << i;
 		show_ibo(GL_LINES, m_ibos[i], m_vbos[i], m_vaos[i], QVector3D());
 	}
+	qDebug() << "<GLWidget::getGeometry()";
 }
 
 void GLWidget::initializeShaders()
@@ -439,6 +458,8 @@ void GLWidget::initializeShaders()
 
 	ok = m_prg_u_col_a_pos->link();
 	if (!ok) qWarning() << "m_prg_u_col_a_pos";
+
+	qDebug() << "<GLWidget::initializeShaders()";
 }
 
 void GLWidget::drawAxis()
@@ -472,6 +493,7 @@ void GLWidget::drawAxis()
 	//~ m_axis_points.release();
 	//~ m_vao_axis.release();
 	//~ m_prg_a_pos_a_col->release();
+	qDebug() << "<GLWidget::drawAxis()";
 }
 
 void GLWidget::drawGeometry()
@@ -523,6 +545,7 @@ void GLWidget::drawGeometry()
 	//~ m_vao_scene.release();
 	qDebug() << "*m_mm[" << 0 << "] =" << *m_mm[0];
 	//~ m_prg_u_col_a_pos->release();
+	qDebug() << "<GLWidget::drawGeometry()";
 }
 
 void GLWidget::paintGL()
@@ -550,6 +573,7 @@ void GLWidget::paintGL()
 	m_prg_u_col_a_pos->bind();
 	drawGeometry();
 	m_prg_u_col_a_pos->release();
+	qDebug() << "<GLWidget::paintGL()";
 }
 
 void GLWidget::resizeGL(int w, int h)
@@ -564,6 +588,7 @@ void GLWidget::resizeGL(int w, int h)
 
 	cam_ratio = GLfloat(w) / h;
 	qDebug() << "cam_ratio =" << cam_ratio;
+	qDebug() << "<GLWidget::resizeGL(int" << w << ", int" << h << ")";
 }
 
 /*static void qNormalizeAngle(int &angle)

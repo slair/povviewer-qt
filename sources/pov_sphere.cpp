@@ -35,5 +35,6 @@ int pov_Sphere::read(QDataStream& ds)
 	int readed = pov_BaseObject::read(ds);
 	readed += ds.readRawData((char*)&m_center, sizeof(m_center));
 	readed += ds.readRawData((char*)&m_radius, sizeof(m_radius));
+	qDebug() << "<pov_Sphere::read(" << &ds << ")";
 	return readed;
 }

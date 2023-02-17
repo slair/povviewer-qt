@@ -18,7 +18,7 @@ public:
 		qDebug() << ">pov_Transform::pov_Transform(" << pt << ")";
 		m_matrix = new double[16];
 		memcpy(m_matrix, pt.m_matrix, sizeof(m_matrix));
-		qDebug() << ">pov_Transform::pov_Transform(" << pt << ")";
+		qDebug() << "<pov_Transform::pov_Transform(" << pt << ")";
 	};
 	pov_Transform& operator=(const pov_Transform& pt)
 	{

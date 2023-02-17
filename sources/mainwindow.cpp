@@ -13,7 +13,7 @@
 
 MainWindow::MainWindow(pov_Scene* scene)
 {
-	qDebug() << "MainWindow::MainWindow(" << scene << ")";
+	qDebug() << ">MainWindow::MainWindow(" << scene << ")";
 	m_scene = scene;
 	glWidget = new GLWidget(nullptr, m_scene);
 	setCentralWidget(glWidget);
@@ -24,18 +24,19 @@ MainWindow::MainWindow(pov_Scene* scene)
 				, m_scene->cfg()->window_pos_y()
 				, m_scene->cfg()->window_width()
 				, m_scene->cfg()->window_height());
+	qDebug() << "<MainWindow::MainWindow(" << scene << ")";
 }
 
 MainWindow::~MainWindow()
 {
-	qDebug() << "MainWindow::~MainWindow()";
+	qDebug() << ">MainWindow::~MainWindow()";
 	// done:  16. save position and size mainwindow
 	qDebug() << geometry();
 	m_scene->cfg()->set_window_pos_x(geometry().x());
 	m_scene->cfg()->set_window_pos_y(geometry().y());
 	m_scene->cfg()->set_window_width(geometry().width());
 	m_scene->cfg()->set_window_height(geometry().height());
-	qDebug() << "MainWindow deleted";
+	qDebug() << "<MainWindow::~MainWindow()";
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *e)

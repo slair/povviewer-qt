@@ -112,10 +112,6 @@ void pov_BaseObject::getBBOX(QVector<QVector4D*>& m_mc
 	QOpenGLBuffer* vbo = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
 	QOpenGLBuffer* ibo = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
 
-	vao->create();
-	//~ vao->bind();
-	QOpenGLVertexArrayObject::Binder vaoBinder(vao);
-
 	qDebug() << "sizeof(_vertices) =" << sizeof(_vertices) << "bytes"
 			 << sizeof(_vertices) / sizeof(QVector3D) << "vertices";
 	vbo->create();
@@ -130,9 +126,12 @@ void pov_BaseObject::getBBOX(QVector<QVector4D*>& m_mc
 	ibo->setUsagePattern(QOpenGLBuffer::StaticDraw);
 	ibo->allocate(_indices, sizeof(_indices));
 
+	vao->create();
+	//~ vao->bind();
+	QOpenGLVertexArrayObject::Binder vaoBinder(vao);
+
 	m_mc << _color;
 	qDebug() << "_color:" << *_color;
-
 	m_vaos << vao;
 	qDebug() << "vao:" << vbo << "vao->objectId() =" << vao->objectId();
 	m_vbos << vbo;
@@ -145,6 +144,9 @@ void pov_BaseObject::getBBOX(QVector<QVector4D*>& m_mc
 	//~ vao->release();
 
 	show_ibo(GL_LINES, ibo, vbo, vao, QVector3D());
+
+	qDebug() << "<pov_BaseObject::getBBOX("
+			 << &m_mc << "," << &m_vbos << "," << &m_ibos << ")";
 }
 int pov_BaseObject::read(QDataStream& ds)
 {
@@ -177,5 +179,6 @@ int pov_BaseObject::read(QDataStream& ds)
 	}
 
 	delete[] tmp;
+	qDebug() << "<pov_BaseObject::read(" << &ds << ")";
 	return freaded;
 }

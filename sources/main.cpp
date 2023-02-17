@@ -27,6 +27,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 					 , const QString &msg)
 #pragma warning(default : 4100)
 {
+	static int _il = 0;		// indentation level
 	QByteArray localMsg = msg.toLocal8Bit();
 #ifdef DEBUG_CONTEXT
 	const char *file = context.file ? context.file : "";
@@ -34,8 +35,9 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 	const char *function = context.function ? context.function : "";
 #pragma warning(default : 4189)
 #endif
+	QChar first_char = msg[0];
 	if (ATTENTION_CHARS.contains(msg[0])) {
-		AC = msg[0];
+		AC = first_char;
 		localMsg = msg.right(msg.length() - 1).toLocal8Bit();
 	} else {
 		AC = " ";
@@ -60,21 +62,39 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 	}
 	if (localMsg != "QOpenGLFramebufferObject: Unsupported "
 		"framebuffer format.") {
-//~ #ifdef DEBUG_CONTEXT
+
+	if (first_char == "<") {
+		_il -= 1;
+		if (_il < 0) {
+			_il = 0;
+		}
+	}
+
+	QString indent = "";
+	for(int i = 0; i < _il; i++)
+	{
+		indent += "  ";
+	}
+
 #if DEBUG_CONTEXT == 1
-		fprintf(stderr, "%s: %s\t\t\t\t\t\t\t\t\t\t\t\tFile \"%s\", line %u\n"
+		fprintf(stderr, "%s: %s%s %d\t\t\t\t\t\t\t\t\t\t\t\tFile \"%s\", line %u\n"
 				, msg_type.toLocal8Bit().constData()
-				, localMsg.constData(), file, context.line);
+				, indent.toLocal8Bit().constData()
+				, localMsg.constData(), _il, file, context.line);
 #elif DEBUG_CONTEXT == 2
-		fprintf(stderr, "%s: %s\n", msg_type.toLocal8Bit().constData()
-				, localMsg.constData());
+		fprintf(stderr, "%s: %s%s\n", msg_type.toLocal8Bit().constData()
+				, indent.constData(),  localMsg.constData());
 		fprintf(stderr, "%s:%u: %s\n%s: %s\n\n", file, context.line, function
 				, msg_type.toLocal8Bit().constData(), localMsg.constData());
 #else
-		fprintf(stderr, "%s: %s\n", msg_type.toLocal8Bit().constData()
-				, localMsg.constData());
+		fprintf(stderr, "%s: %s%s\n", msg_type.toLocal8Bit().constData()
+				, indent.constData(),  localMsg.constData());
 #endif
 //~ #endif
+	}
+
+	if (first_char == ">") {
+		_il += 1;
 	}
 }
 
@@ -134,6 +154,23 @@ int main(int argc, char *argv[])
 	qDebug("DEBUG is ON");
 	qInstallMessageHandler(myMessageOutput);
 #endif
+
+	/*qDebug() << "level 0";
+	qDebug() << ">+level 1";
+	qDebug() << "level 1";
+	qDebug() << ">+level 2";
+	qDebug() << "level 2";
+	qDebug() << ">+level 3";
+	qDebug() << "level 3";
+	qDebug() << "<-level 3";
+	qDebug() << "level 2";
+	qDebug() << "<-level 2";
+	qDebug() << "level 1";
+	qDebug() << "<-level 1";
+	qDebug() << "level 0";
+	qDebug() << "<-level -1";
+	qDebug() << "level -1";
+	return 0;*/
 
 	qDebug() << "Working dir" << QDir::currentPath();
 	qDebug() << "Home dir" << QDir::homePath();
@@ -210,15 +247,15 @@ int main(int argc, char *argv[])
 
 	delete main_window;
 	main_window = nullptr;
-	qDebug() << "main_window deleted";
+	//~ qDebug() << "main_window deleted";
 
 	delete scene;
 	scene = nullptr;
-	qDebug() << "scene deleted";
+	//~ qDebug() << "scene deleted";
 
 	delete cfg;
 	cfg = nullptr;
-	qDebug() << "cfg deleted";
+	//~ qDebug() << "cfg deleted";
 
 	//~ qDebug() << "delete app";
 	//~ delete app;
