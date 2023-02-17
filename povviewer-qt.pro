@@ -1,7 +1,9 @@
 #!/usr/bin/qmake
 # -*- coding: utf-8 -*-
 
-DEFINES += "DEBUG_CONTEXT=1"	# 1 - one line
+# to show context
+#~ DEFINES += "DEBUG_CONTEXT=1"	# 1 - one line
+DEFINES += "DEBUG_CONTEXT=2"	# 2 - two lines(context then msg)
 
 message($$QMAKESPEC)
 

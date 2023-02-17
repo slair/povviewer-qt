@@ -77,10 +77,10 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 	}
 
 #if DEBUG_CONTEXT == 1
-		fprintf(stderr, "%s: %s%s %d\t\t\t\t\t\t\t\t\t\t\t\tFile \"%s\", line %u\n"
+		fprintf(stderr, "%s: %s%s\t\t\t\t\t\t\t\t\t\t\t\tFile \"%s\", line %u\n"
 				, msg_type.toLocal8Bit().constData()
 				, indent.toLocal8Bit().constData()
-				, localMsg.constData(), _il, file, context.line);
+				, localMsg.constData()/*, _il*/, file, context.line);
 #elif DEBUG_CONTEXT == 2
 		fprintf(stderr, "%s: %s%s\n", msg_type.toLocal8Bit().constData()
 				, indent.constData(),  localMsg.constData());
@@ -98,53 +98,16 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 	}
 }
 
-/*
-void verboseMessageHandler(QtMsgType type, const QMessageLogContext &context,
-						   const QString &msg)
-{
-	static const char* typeStr[] = {"   DEBUG", " WARNING",
-									"CRITICAL", "   FATAL"
-								   };
-
-	if(type <= QtFatalMsg) {
-
-#ifdef MS_WINDOWS
+/*#ifdef MS_WINDOWS
 		// Установка кодека для нормальной работы консоли
 		QTextCodec::setCodecForLocale(QTextCodec::codecForName("CP 866"));
 #endif
-
-		QByteArray localMsg = msg.toLocal8Bit();
-
-		//~ QString contextString(QStringLiteral("%1:%2: %3")
-		//~ .arg(context.file)
-		//~ .arg(context.line)
-		//~ .arg(context.function));
-		QString contextString(QStringLiteral("%1:%2: ")
-							  .arg(context.file)
-							  .arg(context.line));
-
-		QString timeStr(QDateTime::currentDateTime()
-						.toString("dd-MM-yy HH:mm:ss:zzz"));
-
-		//~ std::cerr << timeStr.toLocal8Bit().constData() << " - "
-		//~ if (type>0 || cfg_debug) {
-		if (type > 0) {
-			std::cout << contextString.toLocal8Bit().constData()
-					  << typeStr[type] << " "
-					  //~ << timeStr.toLocal8Bit().constData() << " "
-					  << localMsg.constData() << std::endl;
-			//~ std::cout.flush();
-		}
 #ifdef MS_WINDOWS
 		// Установка кодека для нормальной работы локали
 		QTextCodec::setCodecForLocale(QTextCodec::codecForName("CP 1251"));
 #endif
 		if(type == QtFatalMsg) {
-			abort();
-		}
-	}
-}
-*/
+			abort();*/
 
 int main(int argc, char *argv[])
 {

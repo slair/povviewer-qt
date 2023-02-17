@@ -386,6 +386,12 @@ void GLWidget::getAxis()
 	qDebug() << "indices:";
 	for(int i = 0; i < indices.size(); i++) qDebug() << i << indices[i];
 
+	m_vao_axis.create();
+	m_vao_axis.bind();
+	qDebug() << ">m_vao_axis.bind()";
+	//~ QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao_axis);
+	qDebug() << "!m_vao_axis.objectId() =" << m_vao_axis.objectId();
+
 	m_axis_points.create();
 	m_axis_points.bind();
 	m_axis_points.setUsagePattern(QOpenGLBuffer::StaticDraw);
@@ -398,17 +404,13 @@ void GLWidget::getAxis()
 	m_axis_indices.allocate(indices.constData()
 							, indices.size() * sizeof(GLuint));
 
-	m_vao_axis.create();
-	//~ m_vao_axis.bind();
-	QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao_axis);
-	qDebug() << "m_vao_axis.objectId() =" << m_vao_axis.objectId();
+	//~ m_axis_indices.release();
+	//~ m_axis_points.release();
+	qDebug() << "<m_vao_axis.release()";
+	m_vao_axis.release();
 
 	indices.clear();
 	points.clear();
-
-	//~ m_axis_indices.release();
-	//~ m_axis_points.release();
-	//~ m_vao_axis.release();
 
 	show_ibo(GL_LINES, &m_axis_indices, &m_axis_points, &m_vao_axis, PosCol());
 	qDebug() << "<GLWidget::getAxis()";

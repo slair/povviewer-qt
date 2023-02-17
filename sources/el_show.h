@@ -44,8 +44,8 @@ void show_ibo(const GLenum type, QOpenGLBuffer* ibo
 			 << "items";
 	qDebug() << " ";
 
-	//~ vao->bind();
-	QOpenGLVertexArrayObject::Binder vaoBinder(vao);
+	vao->bind();
+	//~ QOpenGLVertexArrayObject::Binder vaoBinder(vao);
 
 	_T* items = new _T[vbo->size() / sizeof(i)];
 	if (vbo->read(0, items, vbo->size())) {
