@@ -83,12 +83,12 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context
 				, localMsg.constData()/*, _il*/, file, context.line);
 #elif DEBUG_CONTEXT == 2
 		fprintf(stderr, "%s: %s%s\n", msg_type.toLocal8Bit().constData()
-				, indent.constData(),  localMsg.constData());
+				, indent.toLocal8Bit().constData(),  localMsg.constData());
 		fprintf(stderr, "%s:%u: %s\n%s: %s\n\n", file, context.line, function
 				, msg_type.toLocal8Bit().constData(), localMsg.constData());
 #else
 		fprintf(stderr, "%s: %s%s\n", msg_type.toLocal8Bit().constData()
-				, indent.constData(),  localMsg.constData());
+				, indent.toLocal8Bit().constData(),  localMsg.constData());
 #endif
 //~ #endif
 	}
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
 		} else {
 			qCritical().nospace() << "No '"
 								  << POVVIEWER_DEFAULT_POV_SCENE_NAME
-								  << "' found";
+								  << "' file found";
 			return 0;
 		}
 	} else {
