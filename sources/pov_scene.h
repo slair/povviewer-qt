@@ -30,12 +30,14 @@ public:
 	pov_Scene(const pov_Scene& scene) {
 		qDebug() << ">pov_Scene::pov_Scene(" << scene << ")";
 		qCritical() << "Never call me";
+		qDebug() << "<pov_Scene::pov_Scene(" << scene << ")";
 	};
 
 	pov_Scene& operator=(const pov_Scene& scene)
 	{
 		qDebug() << ">pov_Scene::operator=(" << scene << ")";
 		qCritical() << "Never call me";
+		qDebug() << "<pov_Scene::operator=(" << scene << ")";
 	};
 
 	bool parse();
@@ -46,13 +48,15 @@ public:
 	QString filename() const {
 		return m_scenefilename;
 	}
-	void setup_perspective(float cam_ratio);
-	void setup_ortho();
-	void getGeometry(QVector<QMatrix4x4*>& m_mm
+	//~ void setup_perspective(float cam_ratio);
+	//~ void setup_ortho();
+	/*void getGeometry(QVector<QMatrix4x4*>& m_mm
 					 , QVector<QVector4D*>& m_mc
 					 , QVector<QOpenGLVertexArrayObject*>& m_vaos
 					 , QVector<QOpenGLBuffer*>& m_vbos
-					 , QVector<QOpenGLBuffer*>& m_ibos);
+					 , QVector<QOpenGLBuffer*>& m_ibos);*/
+	void initializeGL();
+	void draw(QMatrix4x4& m_proj, QMatrix4x4& m_view) const;
 
 private:
 	Config* m_cfg;
@@ -62,6 +66,12 @@ private:
 	double m_clockvalue;
 	double m_parse_time;
 	double m_load_time;
+	QVector<QVector3D> m_vertices;
+	uint m_vertices_reserve_count = 1000;
+	QVector<QVector3D> m_normals;
+	QVector<QVector4D> m_colors;
+	QVector<GLuint> m_indices;
+	uint m_indices_reserve_count = 1000;
 };
 
 #endif // POV_SCENE_H

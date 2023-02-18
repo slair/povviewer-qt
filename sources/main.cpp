@@ -139,7 +139,8 @@ int main(int argc, char *argv[])
 	qDebug() << "Home dir" << QDir::homePath();
 	qDebug() << "Temporary dir" << QDir::tempPath();
 
-	QApplication* app = new QApplication(argc, argv);
+	//~ QApplication* app = new QApplication(argc, argv);
+	QApplication app(argc, argv);
 
 	Config* cfg = new Config();
 
@@ -156,7 +157,7 @@ int main(int argc, char *argv[])
 								 , QCoreApplication::translate("main"
 										 , "The file to open(.pov / .dump)."));
 
-	parser.process(*app);
+	parser.process(app);
 
 	QString filename;
 
@@ -206,7 +207,7 @@ int main(int argc, char *argv[])
 	// done:   7. show window
 	main_window->show();
 
-	int exitcode = app->exec();
+	int exitcode = app.exec();
 
 	delete main_window;
 	main_window = nullptr;

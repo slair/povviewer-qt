@@ -226,16 +226,94 @@ void GLWidget::initializeGL()
 	m_funcs->glDepthFunc(GL_LEQUAL);
 
 	initializeShaders();
-
-	getAxis();
-	getGeometry();
-
 	initializeTextures();
 	initializeMatrices();
+	m_scene->initializeGL();
+	//~ getAxis();
+	//~ getGeometry();
 
 	connect(context(), &QOpenGLContext::aboutToBeDestroyed, this
 			, &GLWidget::cleanup);
 	qDebug() << "<GLWidget::initializeGL()";
+}
+
+void GLWidget::paintGL()
+{
+	qDebug() << ">GLWidget::paintGL()";
+
+	if (!m_funcs) {
+		qDebug() << "m_funcs =" << m_funcs;
+		return;
+	}
+
+	m_funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_funcs->glDisable(GL_LIGHTING);
+
+	generate_mv_mp();
+
+	m_prg_a_pos_a_col->bind();
+	m_scene->draw(m_proj, m_view);
+
+	// draw axis
+	//~ if (m_scene->cfg()->show_axis()) {
+		//~ drawAxis();
+	//~ }
+	m_prg_a_pos_a_col->release();
+
+	// draw scene
+	//~ m_prg_u_col_a_pos->bind();
+	//~ drawGeometry();
+	//~ m_prg_u_col_a_pos->release();
+	qDebug() << "<GLWidget::paintGL()";
+}
+
+void GLWidget::resizeGL(int w, int h)
+{
+	qDebug() << ">GLWidget::resizeGL(int" << w << ", int" << h << ")";
+	if (!m_funcs) {
+		qDebug() << "m_funcs =" << m_funcs;
+		return;
+	}
+
+	m_funcs->glViewport(0, 0, w, h);
+
+	cam_ratio = GLfloat(w) / h;
+	qDebug() << "cam_ratio =" << cam_ratio;
+	qDebug() << "<GLWidget::resizeGL(int" << w << ", int" << h << ")";
+}
+
+void GLWidget::initializeShaders()
+{
+	// todo: load shaders from .glsl files
+	qDebug() << ">GLWidget::initializeShaders()";
+	m_prg_a_pos_a_col = new QOpenGLShaderProgram();
+	bool ok;
+	ok = m_prg_a_pos_a_col->addShaderFromSourceCode(QOpenGLShader::Vertex
+			, VS_a_pos_a_col);
+	if (!ok) qWarning() << "m_prg_a_pos_a_col";
+
+	ok = m_prg_a_pos_a_col->addShaderFromSourceCode(QOpenGLShader::Fragment
+			, FS_a_pos_a_col);
+	if (!ok) qWarning() << "m_prg_a_pos_a_col";
+
+	ok = m_prg_a_pos_a_col->link();
+	if (!ok) qWarning() << "m_prg_a_pos_a_col";
+
+	ok = m_prg_u_col_a_pos = new QOpenGLShaderProgram();
+	if (!ok) qWarning() << "m_prg_u_col_a_pos";
+
+	ok = m_prg_u_col_a_pos->addShaderFromSourceCode(QOpenGLShader::Vertex
+			, VS_u_col_a_pos);
+	if (!ok) qWarning() << "m_prg_u_col_a_pos";
+
+	ok = m_prg_u_col_a_pos->addShaderFromSourceCode(QOpenGLShader::Fragment
+			, FS_u_col_a_pos);
+	if (!ok) qWarning() << "m_prg_u_col_a_pos";
+
+	ok = m_prg_u_col_a_pos->link();
+	if (!ok) qWarning() << "m_prg_u_col_a_pos";
+
+	qDebug() << "<GLWidget::initializeShaders()";
 }
 
 void GLWidget::initializeMatrices()
@@ -416,7 +494,7 @@ void GLWidget::getAxis()
 	qDebug() << "<GLWidget::getAxis()";
 }
 
-void GLWidget::getGeometry()
+/*void GLWidget::getGeometry()
 {
 	qDebug() << ">GLWidget::getGeometry()";
 	clearBuffers();
@@ -429,39 +507,6 @@ void GLWidget::getGeometry()
 		show_ibo(GL_LINES, m_ibos[i], m_vbos[i], m_vaos[i], QVector3D());
 	}
 	qDebug() << "<GLWidget::getGeometry()";
-}
-
-void GLWidget::initializeShaders()
-{
-	qDebug() << ">GLWidget::initializeShaders()";
-	m_prg_a_pos_a_col = new QOpenGLShaderProgram();
-	bool ok;
-	ok = m_prg_a_pos_a_col->addShaderFromSourceCode(QOpenGLShader::Vertex
-			, VS_a_pos_a_col);
-	if (!ok) qWarning() << "m_prg_a_pos_a_col";
-
-	ok = m_prg_a_pos_a_col->addShaderFromSourceCode(QOpenGLShader::Fragment
-			, FS_a_pos_a_col);
-	if (!ok) qWarning() << "m_prg_a_pos_a_col";
-
-	ok = m_prg_a_pos_a_col->link();
-	if (!ok) qWarning() << "m_prg_a_pos_a_col";
-
-	ok = m_prg_u_col_a_pos = new QOpenGLShaderProgram();
-	if (!ok) qWarning() << "m_prg_u_col_a_pos";
-
-	ok = m_prg_u_col_a_pos->addShaderFromSourceCode(QOpenGLShader::Vertex
-			, VS_u_col_a_pos);
-	if (!ok) qWarning() << "m_prg_u_col_a_pos";
-
-	ok = m_prg_u_col_a_pos->addShaderFromSourceCode(QOpenGLShader::Fragment
-			, FS_u_col_a_pos);
-	if (!ok) qWarning() << "m_prg_u_col_a_pos";
-
-	ok = m_prg_u_col_a_pos->link();
-	if (!ok) qWarning() << "m_prg_u_col_a_pos";
-
-	qDebug() << "<GLWidget::initializeShaders()";
 }
 
 void GLWidget::drawAxis()
@@ -532,7 +577,6 @@ void GLWidget::drawGeometry()
 		m_prg_u_col_a_pos->setUniformValue("u_mp", m_proj);
 		m_prg_u_col_a_pos->setUniformValue("u_mv", m_view);
 		//~ int col = m_prg_u_col_a_pos->uniformLocation("u_col");
-		// fixme: one color
 		m_prg_u_col_a_pos->setUniformValue("u_col", *m_mc[i]);
 
 		m_funcs->glDrawElements(GL_LINES
@@ -548,50 +592,7 @@ void GLWidget::drawGeometry()
 	qDebug() << "*m_mm[" << 0 << "] =" << *m_mm[0];
 	//~ m_prg_u_col_a_pos->release();
 	qDebug() << "<GLWidget::drawGeometry()";
-}
-
-void GLWidget::paintGL()
-{
-	qDebug() << ">GLWidget::paintGL()";
-
-	if (!m_funcs) {
-		qDebug() << "m_funcs =" << m_funcs;
-		return;
-	}
-
-	m_funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	m_funcs->glDisable(GL_LIGHTING);
-
-	generate_mv_mp();
-
-	m_prg_a_pos_a_col->bind();
-	// draw axis
-	if (m_scene->cfg()->show_axis()) {
-		drawAxis();
-	}
-	m_prg_a_pos_a_col->release();
-
-	// draw scene
-	m_prg_u_col_a_pos->bind();
-	drawGeometry();
-	m_prg_u_col_a_pos->release();
-	qDebug() << "<GLWidget::paintGL()";
-}
-
-void GLWidget::resizeGL(int w, int h)
-{
-	qDebug() << ">GLWidget::resizeGL(int" << w << ", int" << h << ")";
-	if (!m_funcs) {
-		qDebug() << "m_funcs =" << m_funcs;
-		return;
-	}
-
-	m_funcs->glViewport(0, 0, w, h);
-
-	cam_ratio = GLfloat(w) / h;
-	qDebug() << "cam_ratio =" << cam_ratio;
-	qDebug() << "<GLWidget::resizeGL(int" << w << ", int" << h << ")";
-}
+}*/
 
 /*static void qNormalizeAngle(int &angle)
 {

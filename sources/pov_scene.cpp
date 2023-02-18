@@ -62,7 +62,25 @@ QDebug operator << (QDebug d, const pov_Scene& scene)
 	return d;
 }
 
-void pov_Scene::getGeometry(QVector<QMatrix4x4*>& m_mm
+void pov_Scene::initializeGL()
+{
+	m_vertices.clear();
+	m_vertices.reserve(m_vertices_reserve_count);
+	m_normals.clear();
+	m_colors.clear();
+	m_indices.clear();
+
+	// todo: add axis
+
+	// todo: add m_objects
+}
+
+void pov_Scene::draw(QMatrix4x4& m_proj, QMatrix4x4& m_view) const
+{
+	qDebug() << m_proj << m_view;
+}
+
+/*void pov_Scene::getGeometry(QVector<QMatrix4x4*>& m_mm
 							, QVector<QVector4D*>& m_mc
 							, QVector<QOpenGLVertexArrayObject*>& m_vaos
 							, QVector<QOpenGLBuffer*>& m_vbos
@@ -82,7 +100,7 @@ void pov_Scene::getGeometry(QVector<QMatrix4x4*>& m_mm
 	}
 	qDebug() << "<pov_Scene::getGeometry(" << &m_mm
 			 << "," << &m_mc << "," << &m_vbos << "," << &m_ibos << ")";
-}
+}*/
 
 bool delete_file(const QString& filepath)
 {
@@ -175,7 +193,7 @@ bool pov_Scene::parse()
 	delete_zero_file(m_cfg->path_to_renderlog());
 	delete_zero_file(m_cfg->path_to_statisticlog());
 	delete_zero_file(m_cfg->path_to_warninglog());
-	// todo:   9. check logs for errors
+	// todo: check logs for errors
 
 	// done:  11. read dump
 	QFile dumpfile(m_cfg->path_to_dump());
