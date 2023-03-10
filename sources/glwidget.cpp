@@ -417,14 +417,7 @@ GLuint add_item(QVector<_T>& v, const _T i)
 	return res;
 }
 
-#define COLOR_BRIGHT_RED QVector4D(1, 0, 0, 0)
-#define COLOR_RED QVector4D(0.5, 0, 0, 0)
-#define COLOR_BRIGHT_GREEN QVector4D(0, 1, 0, 0)
-#define COLOR_GREEN QVector4D(0, 0.5, 0, 0)
-#define COLOR_BRIGHT_BLUE QVector4D(0, 0, 1, 0)
-#define COLOR_BLUE QVector4D(0, 0, 0.5, 0)
-
-void GLWidget::getAxis()
+/*void GLWidget::getAxis()
 {
 	qDebug() << ">GLWidget::getAxis()";
 	if (!m_scene->cfg()->show_axis()) {
@@ -492,7 +485,7 @@ void GLWidget::getAxis()
 
 	show_ibo(GL_LINES, &m_axis_indices, &m_axis_points, &m_vao_axis, PosCol());
 	qDebug() << "<GLWidget::getAxis()";
-}
+}*/
 
 /*void GLWidget::getGeometry()
 {

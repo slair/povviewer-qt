@@ -33,8 +33,7 @@ public:
 		qDebug() << "<pov_Scene::pov_Scene(" << scene << ")";
 	};
 
-	pov_Scene& operator=(const pov_Scene& scene)
-	{
+	pov_Scene& operator=(const pov_Scene& scene) {
 		qDebug() << ">pov_Scene::operator=(" << scene << ")";
 		qCritical() << "Never call me";
 		qDebug() << "<pov_Scene::operator=(" << scene << ")";
@@ -66,12 +65,18 @@ private:
 	double m_clockvalue;
 	double m_parse_time;
 	double m_load_time;
+
 	QVector<QVector3D> m_vertices;
 	uint m_vertices_reserve_count = 1000;
 	QVector<QVector3D> m_normals;
 	QVector<QVector4D> m_colors;
-	QVector<GLuint> m_indices;
-	uint m_indices_reserve_count = 1000;
+	QVector<GLuint> m_lines;
+	uint m_lines_reserve_count = 1000;
+	void clear_lists();
+
+	void add_line(const QVector3D& v1, const QVector3D& v2
+				  , const QVector4D& color);
+	void add_color_axis(const QVector3D& pos, const GLfloat size);
 };
 
 #endif // POV_SCENE_H

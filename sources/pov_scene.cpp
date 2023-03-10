@@ -62,15 +62,71 @@ QDebug operator << (QDebug d, const pov_Scene& scene)
 	return d;
 }
 
-void pov_Scene::initializeGL()
+void pov_Scene::clear_lists()
 {
 	m_vertices.clear();
 	m_vertices.reserve(m_vertices_reserve_count);
 	m_normals.clear();
 	m_colors.clear();
-	m_indices.clear();
+	m_lines.clear();
+}
 
-	// todo: add axis
+void pov_Scene::add_line(const QVector3D& v1, const QVector3D& v2
+						 , const QVector4D& color)
+{
+	GLuint v1i, v2i, ci;
+	if (!m_vertices.contains(v1)) {
+		v1i = m_vertices.count();
+		m_vertices << v1;
+	} else {
+		v1i = m_vertices.indexOf(v1);
+	}
+	if (!m_vertices.contains(v2)) {
+		v2i = m_vertices.count();
+		m_vertices << v2;
+	} else {
+		v2i = m_vertices.indexOf(v2);
+	}
+	if (!m_colors.contains(color)) {
+		ci = m_colors.count();
+		m_colors << color;
+	} else {
+		ci = m_colors.indexOf(v2);
+	}
+	m_lines << v1i << ci << v2i << ci;
+}
+
+#define COLOR_BRIGHT_RED QVector4D(1, 0, 0, 0)
+#define COLOR_RED QVector4D(0.5, 0, 0, 0)
+#define COLOR_BRIGHT_GREEN QVector4D(0, 1, 0, 0)
+#define COLOR_GREEN QVector4D(0, 0.5, 0, 0)
+#define COLOR_BRIGHT_BLUE QVector4D(0, 0, 1, 0)
+#define COLOR_BLUE QVector4D(0, 0, 0.5, 0)
+
+void pov_Scene::add_color_axis(const QVector3D& pos, const GLfloat size)
+{
+	// X axis
+	add_line(pos, pos + QVector3D(size, 0, 0), COLOR_BRIGHT_RED);
+	add_line(pos, pos + QVector3D(-size, 0, 0), COLOR_RED);
+	// Y axis
+	add_line(pos, pos + QVector3D(0, size, 0), COLOR_BRIGHT_GREEN);
+	add_line(pos, pos + QVector3D(0, -size, 0), COLOR_GREEN);
+	// Z axis
+	add_line(pos, pos + QVector3D(0, 0, size), COLOR_BRIGHT_BLUE);
+	add_line(pos, pos + QVector3D(0, 0, -size), COLOR_BLUE);
+}
+
+void pov_Scene::initializeGL()
+{
+	clear_lists();
+
+	if (m_cfg->show_axis()) {
+		// todo: add axis
+		float _as = m_cfg->axis_size() / 2.0;
+		add_color_axis(QVector3D(0, 0, 0), _as);
+	} else {
+		qDebug() << "m_cfg->show_axis() =" << m_cfg->show_axis();
+	}
 
 	// todo: add m_objects
 }
