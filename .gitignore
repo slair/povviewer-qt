@@ -14,6 +14,7 @@ SciTEDirectory.properties
 povviewer-qt.ini
 test-run.sh
 mytasks.py
+povviewer-qt.pro.user
 
 # Prerequisites
 *.d
